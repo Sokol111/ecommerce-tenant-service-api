@@ -1,0 +1,326 @@
+paths:
+  /v1/tenant/create:
+    post:
+      summary: Create a new tenant
+      operationId: createTenant
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../schemas/tenant.yml#/components/schemas/CreateTenantRequest"
+      responses:
+        "200":
+          description: Tenant created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/TenantResponse"
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "409":
+          description: Tenant with this slug already exists
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+
+  /v1/tenant/update:
+    put:
+      summary: Update an existing tenant
+      operationId: updateTenant
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../schemas/tenant.yml#/components/schemas/UpdateTenantRequest"
+      responses:
+        "200":
+          description: Tenant updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/TenantResponse"
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "404":
+          description: Tenant not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "412":
+          description: Version mismatch (optimistic locking)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+
+  /v1/tenant/get/{slug}:
+    get:
+      summary: Get a tenant by slug
+      operationId: getTenantBySlug
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:read]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Tenant slug
+      responses:
+        "200":
+          description: Tenant retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/TenantResponse"
+        "404":
+          description: Tenant not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+
+  /v1/tenant/deactivate/{slug}:
+    post:
+      summary: Deactivate a tenant
+      operationId: deactivateTenant
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:write]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Tenant slug
+      responses:
+        "200":
+          description: Tenant deactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/TenantResponse"
+        "404":
+          description: Tenant not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+
+  /v1/tenant/activate/{slug}:
+    post:
+      summary: Activate a deactivated tenant
+      operationId: activateTenant
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:write]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Tenant slug
+      responses:
+        "200":
+          description: Tenant activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/TenantResponse"
+        "404":
+          description: Tenant not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+
+  /v1/tenant/delete/{slug}:
+    delete:
+      summary: Delete a tenant
+      description: |
+        Permanently deletes a tenant. The tenant must be deactivated first.
+        This triggers a TenantDeleted event that causes all services to drop their tenant databases.
+      operationId: deleteTenant
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:write]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Tenant slug
+      responses:
+        "204":
+          description: Tenant deleted successfully
+        "400":
+          description: Tenant must be deactivated before deletion
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "404":
+          description: Tenant not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+
+  /v1/tenant/list:
+    get:
+      summary: Get a paginated list of tenants
+      operationId: getTenantList
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:read]
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+          description: Page number (1-based)
+        - name: size
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 20
+          description: Number of items per page (max 100)
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, deactivated]
+          description: Filter by status
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [name, createdAt, modifiedAt]
+            example: createdAt
+          description: Field to sort by
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+            example: desc
+          description: Sort order
+      responses:
+        "200":
+          description: List of tenants retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/TenantListResponse"
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+
+  /v1/tenant/slugs:
+    get:
+      summary: Get all active tenant slugs
+      description: |
+        Returns a flat list of all active tenant slugs.
+        Used by other services on startup to discover tenants for migrations.
+      operationId: getActiveTenantSlugs
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:read]
+      responses:
+        "200":
+          description: List of active tenant slugs
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/TenantSlugListResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"

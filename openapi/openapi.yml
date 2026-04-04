@@ -2,25 +2,51 @@ openapi: 3.0.3
 info:
   title: Tenant Service API
   version: 0.0.1
-  description: API for managing tenants
+  description: |
+    API for managing tenants.
+    
+    Handles tenant lifecycle: creation, update, deactivation, activation, and deletion.
+    Other services use this API to discover active tenants on startup.
+
+tags:
+  - name: Tenants
+    description: Tenant management
+
+paths:
+  /v1/tenant/create:
+    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1create"
+  /v1/tenant/update:
+    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1update"
+  /v1/tenant/get/{slug}:
+    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1get~1{slug}"
+  /v1/tenant/deactivate/{slug}:
+    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1deactivate~1{slug}"
+  /v1/tenant/activate/{slug}:
+    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1activate~1{slug}"
+  /v1/tenant/delete/{slug}:
+    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1delete~1{slug}"
+  /v1/tenant/list:
+    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1list"
+  /v1/tenant/slugs:
+    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1slugs"
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: PASETO token in Authorization header
+
   schemas:
     Problem:
-      type: object
-      description: RFC7807 Problem Details
-      required: [type, title, status]
-      properties:
-        type: { type: string, format: uri }
-        title: { type: string }
-        status: { type: integer }
-        detail: { type: string }
-        instance: { type: string, format: uri }
-        traceId: { type: string }
-        errors:
-          type: array
-          items:
-            type: object
-            properties:
-              field: { type: string }
-              message: { type: string }
+      $ref: "./schemas/common.yml#/components/schemas/Problem"
+    TenantResponse:
+      $ref: "./schemas/tenant.yml#/components/schemas/TenantResponse"
+    TenantListResponse:
+      $ref: "./schemas/tenant.yml#/components/schemas/TenantListResponse"
+    TenantSlugListResponse:
+      $ref: "./schemas/tenant.yml#/components/schemas/TenantSlugListResponse"
+    CreateTenantRequest:
+      $ref: "./schemas/tenant.yml#/components/schemas/CreateTenantRequest"
+    UpdateTenantRequest:
+      $ref: "./schemas/tenant.yml#/components/schemas/UpdateTenantRequest"

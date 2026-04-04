@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "TenantDeletedPayload",
+  "namespace": "com.ecommerce.events.tenant",
+  "topic": "tenant.tenant.events",
+  "doc": "Published when a tenant is permanently deleted. Services should drop their tenant databases.",
+  "fields": [
+    {
+      "name": "slug",
+      "type": "string",
+      "doc": "Unique tenant slug"
+    }
+  ]
+}

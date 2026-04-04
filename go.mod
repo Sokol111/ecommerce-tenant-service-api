@@ -1,4 +1,4 @@
-module github.com/Sokol111/ecommerce-catalog-service-api
+module github.com/Sokol111/ecommerce-tenant-service-api
 
 go 1.26.1
 
@@ -6,7 +6,6 @@ require (
 	github.com/Sokol111/ecommerce-commons v0.5.5
 	github.com/go-faster/errors v0.7.1
 	github.com/go-faster/jx v1.2.0
-	github.com/google/uuid v1.6.0
 	github.com/ogen-go/ogen v1.20.2
 	go.opentelemetry.io/otel v1.42.0
 	go.opentelemetry.io/otel/metric v1.42.0
@@ -27,6 +26,7 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/knadh/koanf/maps v0.1.2 // indirect

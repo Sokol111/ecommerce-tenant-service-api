@@ -1,0 +1,115 @@
+components:
+  schemas:
+    # ==================== REQUEST SCHEMAS ====================
+    CreateTenantRequest:
+      type: object
+      required:
+        - slug
+        - name
+      properties:
+        slug:
+          type: string
+          example: "acme"
+          minLength: 2
+          maxLength: 63
+          pattern: "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
+          description: |
+            Unique tenant identifier used as subdomain.
+            Must be DNS-compatible: lowercase alphanumeric and hyphens, 
+            cannot start or end with a hyphen.
+        name:
+          type: string
+          example: "Acme Shop"
+          minLength: 2
+          maxLength: 200
+
+    UpdateTenantRequest:
+      type: object
+      required:
+        - slug
+        - name
+        - version
+      properties:
+        slug:
+          type: string
+          example: "acme"
+        name:
+          type: string
+          example: "Acme Shop"
+          minLength: 2
+          maxLength: 200
+        version:
+          type: integer
+          example: 1
+          minimum: 1
+          description: Optimistic locking version
+
+    # ==================== RESPONSE SCHEMAS ====================
+    TenantResponse:
+      type: object
+      required:
+        - slug
+        - name
+        - status
+        - version
+        - createdAt
+        - modifiedAt
+      properties:
+        slug:
+          type: string
+          example: "acme"
+        name:
+          type: string
+          example: "Acme Shop"
+        status:
+          type: string
+          enum: [active, deactivated]
+          example: "active"
+        version:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-01T00:00:00Z"
+        modifiedAt:
+          type: string
+          format: date-time
+          example: "2023-01-02T00:00:00Z"
+
+    TenantListResponse:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TenantResponse"
+        page:
+          type: integer
+          example: 1
+          description: Current page number
+        size:
+          type: integer
+          example: 20
+          description: Number of items per page
+        total:
+          type: integer
+          example: 100
+          description: Total number of items
+
+    TenantSlugListResponse:
+      type: object
+      required:
+        - slugs
+      properties:
+        slugs:
+          type: array
+          items:
+            type: string
+          example: ["acme", "globex"]
+          description: List of active tenant slugs

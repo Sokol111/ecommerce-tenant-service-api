@@ -1,0 +1,74 @@
+{
+  "doc": "Event envelope for TenantDeactivated",
+  "fields": [
+    {
+      "doc": "Event metadata containing technical and observability fields",
+      "name": "metadata",
+      "type": {
+        "doc": "Common event metadata used by all domain events. Contains technical/observability fields separate from business payload.",
+        "fields": [
+          {
+            "name": "event_id",
+            "type": "string",
+            "doc": "Unique event identifier (UUID)"
+          },
+          {
+            "name": "event_type",
+            "type": "string",
+            "doc": "Type of the event (e.g., ProductCreated, ProductUpdated)"
+          },
+          {
+            "name": "source",
+            "type": "string",
+            "doc": "Source service that produced the event"
+          },
+          {
+            "name": "timestamp",
+            "type": {
+              "logicalType": "timestamp-millis",
+              "type": "long"
+            },
+            "doc": "Event creation timestamp in milliseconds since epoch"
+          },
+          {
+            "name": "trace_id",
+            "type": [
+              "null",
+              "string"
+            ],
+            "doc": "OpenTelemetry trace ID for distributed tracing"
+          },
+          {
+            "name": "correlation_id",
+            "type": [
+              "null",
+              "string"
+            ],
+            "doc": "Correlation ID for request tracking across services"
+          }
+        ],
+        "name": "EventMetadata",
+        "type": "record"
+      }
+    },
+    {
+      "doc": "Business data for TenantDeactivated event",
+      "name": "payload",
+      "type": {
+        "doc": "Published when a tenant is deactivated. Services should stop serving requests for this tenant.",
+        "fields": [
+          {
+            "name": "slug",
+            "type": "string",
+            "doc": "Unique tenant slug"
+          }
+        ],
+        "name": "TenantDeactivatedPayload",
+        "type": "record"
+      }
+    }
+  ],
+  "name": "TenantDeactivatedEvent",
+  "namespace": "com.ecommerce.events.tenant",
+  "type": "record"
+}
