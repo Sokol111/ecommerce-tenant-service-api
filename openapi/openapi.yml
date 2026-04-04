@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Tenant Service API
+  version: 0.0.1
+  description: API for managing tenants
+
+components:
+  schemas:
+    Problem:
+      type: object
+      description: RFC7807 Problem Details
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri }
+        traceId: { type: string }
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
