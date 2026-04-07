@@ -1,0 +1,50 @@
+{
+  "type": "record",
+  "name": "TenantUpdatedPayload",
+  "namespace": "com.ecommerce.events.tenant",
+  "topic": "tenant.tenant.events",
+  "doc": "Full tenant snapshot published on create and update. Query services should upsert their local tenant data. Use version for conflict resolution when events arrive out of order.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string",
+      "doc": "Unique tenant identifier (UUID)"
+    },
+    {
+      "name": "slug",
+      "type": "string",
+      "doc": "Unique tenant slug (DNS-compatible)"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "doc": "Display name of the tenant"
+    },
+    {
+      "name": "enabled",
+      "type": "boolean",
+      "doc": "Whether the tenant is enabled"
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "doc": "Entity version for conflict resolution. Only apply if incoming version > stored version."
+    },
+    {
+      "name": "created_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Tenant creation timestamp"
+    },
+    {
+      "name": "modified_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Tenant last modification timestamp"
+    }
+  ]
+}

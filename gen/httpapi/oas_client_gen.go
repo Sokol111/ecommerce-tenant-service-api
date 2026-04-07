@@ -28,38 +28,26 @@ func trimTrailingSlashes(u *url.URL) {
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
-	// ActivateTenant invokes activateTenant operation.
-	//
-	// Activate a deactivated tenant.
-	//
-	// POST /v1/tenant/activate/{slug}
-	ActivateTenant(ctx context.Context, params ActivateTenantParams) (ActivateTenantRes, error)
 	// CreateTenant invokes createTenant operation.
 	//
 	// Create a new tenant.
 	//
 	// POST /v1/tenant/create
 	CreateTenant(ctx context.Context, request *CreateTenantRequest) (CreateTenantRes, error)
-	// DeactivateTenant invokes deactivateTenant operation.
-	//
-	// Deactivate a tenant.
-	//
-	// POST /v1/tenant/deactivate/{slug}
-	DeactivateTenant(ctx context.Context, params DeactivateTenantParams) (DeactivateTenantRes, error)
 	// DeleteTenant invokes deleteTenant operation.
 	//
-	// Permanently deletes a tenant. The tenant must be deactivated first.
+	// Permanently deletes a tenant. The tenant must be disabled first.
 	// This triggers a TenantDeleted event that causes all services to drop their tenant databases.
 	//
 	// DELETE /v1/tenant/delete/{slug}
 	DeleteTenant(ctx context.Context, params DeleteTenantParams) (DeleteTenantRes, error)
-	// GetActiveTenantSlugs invokes getActiveTenantSlugs operation.
+	// GetEnabledTenantSlugs invokes getEnabledTenantSlugs operation.
 	//
-	// Returns a flat list of all active tenant slugs.
+	// Returns a flat list of all enabled tenant slugs.
 	// Used by other services on startup to discover tenants for migrations.
 	//
 	// GET /v1/tenant/slugs
-	GetActiveTenantSlugs(ctx context.Context) (GetActiveTenantSlugsRes, error)
+	GetEnabledTenantSlugs(ctx context.Context) (GetEnabledTenantSlugsRes, error)
 	// GetTenantBySlug invokes getTenantBySlug operation.
 	//
 	// Get a tenant by slug.
@@ -119,131 +107,6 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 		return c.serverURL
 	}
 	return u
-}
-
-// ActivateTenant invokes activateTenant operation.
-//
-// Activate a deactivated tenant.
-//
-// POST /v1/tenant/activate/{slug}
-func (c *Client) ActivateTenant(ctx context.Context, params ActivateTenantParams) (ActivateTenantRes, error) {
-	res, err := c.sendActivateTenant(ctx, params)
-	return res, err
-}
-
-func (c *Client) sendActivateTenant(ctx context.Context, params ActivateTenantParams) (res ActivateTenantRes, err error) {
-	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("activateTenant"),
-		semconv.HTTPRequestMethodKey.String("POST"),
-		semconv.URLTemplateKey.String("/v1/tenant/activate/{slug}"),
-	}
-	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
-
-	// Run stopwatch.
-	startTime := time.Now()
-	defer func() {
-		// Use floating point division here for higher precision (instead of Millisecond method).
-		elapsedDuration := time.Since(startTime)
-		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
-	}()
-
-	// Increment request counter.
-	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-
-	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, ActivateTenantOperation,
-		trace.WithAttributes(otelAttrs...),
-		clientSpanKind,
-	)
-	// Track stage for error reporting.
-	var stage string
-	defer func() {
-		if err != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, stage)
-			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-		}
-		span.End()
-	}()
-
-	stage = "BuildURL"
-	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/v1/tenant/activate/"
-	{
-		// Encode "slug" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "slug",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.Slug))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
-	uri.AddPathParts(u, pathParts[:]...)
-
-	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "POST", u)
-	if err != nil {
-		return res, errors.Wrap(err, "create request")
-	}
-
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-			stage = "Security:BearerAuth"
-			switch err := c.securityBearerAuth(ctx, ActivateTenantOperation, r); {
-			case err == nil: // if NO error
-				satisfied[0] |= 1 << 0
-			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
-				// Skip this security.
-			default:
-				return res, errors.Wrap(err, "security \"BearerAuth\"")
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
-		}
-	}
-
-	stage = "SendRequest"
-	resp, err := c.cfg.Client.Do(r)
-	if err != nil {
-		return res, errors.Wrap(err, "do request")
-	}
-	body := resp.Body
-	defer body.Close()
-
-	stage = "DecodeResponse"
-	result, err := decodeActivateTenantResponse(resp)
-	if err != nil {
-		return res, errors.Wrap(err, "decode response")
-	}
-
-	return result, nil
 }
 
 // CreateTenant invokes createTenant operation.
@@ -356,134 +219,9 @@ func (c *Client) sendCreateTenant(ctx context.Context, request *CreateTenantRequ
 	return result, nil
 }
 
-// DeactivateTenant invokes deactivateTenant operation.
-//
-// Deactivate a tenant.
-//
-// POST /v1/tenant/deactivate/{slug}
-func (c *Client) DeactivateTenant(ctx context.Context, params DeactivateTenantParams) (DeactivateTenantRes, error) {
-	res, err := c.sendDeactivateTenant(ctx, params)
-	return res, err
-}
-
-func (c *Client) sendDeactivateTenant(ctx context.Context, params DeactivateTenantParams) (res DeactivateTenantRes, err error) {
-	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("deactivateTenant"),
-		semconv.HTTPRequestMethodKey.String("POST"),
-		semconv.URLTemplateKey.String("/v1/tenant/deactivate/{slug}"),
-	}
-	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
-
-	// Run stopwatch.
-	startTime := time.Now()
-	defer func() {
-		// Use floating point division here for higher precision (instead of Millisecond method).
-		elapsedDuration := time.Since(startTime)
-		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
-	}()
-
-	// Increment request counter.
-	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-
-	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, DeactivateTenantOperation,
-		trace.WithAttributes(otelAttrs...),
-		clientSpanKind,
-	)
-	// Track stage for error reporting.
-	var stage string
-	defer func() {
-		if err != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, stage)
-			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-		}
-		span.End()
-	}()
-
-	stage = "BuildURL"
-	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/v1/tenant/deactivate/"
-	{
-		// Encode "slug" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "slug",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.Slug))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
-	uri.AddPathParts(u, pathParts[:]...)
-
-	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "POST", u)
-	if err != nil {
-		return res, errors.Wrap(err, "create request")
-	}
-
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-			stage = "Security:BearerAuth"
-			switch err := c.securityBearerAuth(ctx, DeactivateTenantOperation, r); {
-			case err == nil: // if NO error
-				satisfied[0] |= 1 << 0
-			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
-				// Skip this security.
-			default:
-				return res, errors.Wrap(err, "security \"BearerAuth\"")
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
-		}
-	}
-
-	stage = "SendRequest"
-	resp, err := c.cfg.Client.Do(r)
-	if err != nil {
-		return res, errors.Wrap(err, "do request")
-	}
-	body := resp.Body
-	defer body.Close()
-
-	stage = "DecodeResponse"
-	result, err := decodeDeactivateTenantResponse(resp)
-	if err != nil {
-		return res, errors.Wrap(err, "decode response")
-	}
-
-	return result, nil
-}
-
 // DeleteTenant invokes deleteTenant operation.
 //
-// Permanently deletes a tenant. The tenant must be deactivated first.
+// Permanently deletes a tenant. The tenant must be disabled first.
 // This triggers a TenantDeleted event that causes all services to drop their tenant databases.
 //
 // DELETE /v1/tenant/delete/{slug}
@@ -607,20 +345,20 @@ func (c *Client) sendDeleteTenant(ctx context.Context, params DeleteTenantParams
 	return result, nil
 }
 
-// GetActiveTenantSlugs invokes getActiveTenantSlugs operation.
+// GetEnabledTenantSlugs invokes getEnabledTenantSlugs operation.
 //
-// Returns a flat list of all active tenant slugs.
+// Returns a flat list of all enabled tenant slugs.
 // Used by other services on startup to discover tenants for migrations.
 //
 // GET /v1/tenant/slugs
-func (c *Client) GetActiveTenantSlugs(ctx context.Context) (GetActiveTenantSlugsRes, error) {
-	res, err := c.sendGetActiveTenantSlugs(ctx)
+func (c *Client) GetEnabledTenantSlugs(ctx context.Context) (GetEnabledTenantSlugsRes, error) {
+	res, err := c.sendGetEnabledTenantSlugs(ctx)
 	return res, err
 }
 
-func (c *Client) sendGetActiveTenantSlugs(ctx context.Context) (res GetActiveTenantSlugsRes, err error) {
+func (c *Client) sendGetEnabledTenantSlugs(ctx context.Context) (res GetEnabledTenantSlugsRes, err error) {
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("getActiveTenantSlugs"),
+		otelogen.OperationID("getEnabledTenantSlugs"),
 		semconv.HTTPRequestMethodKey.String("GET"),
 		semconv.URLTemplateKey.String("/v1/tenant/slugs"),
 	}
@@ -638,7 +376,7 @@ func (c *Client) sendGetActiveTenantSlugs(ctx context.Context) (res GetActiveTen
 	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
 
 	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, GetActiveTenantSlugsOperation,
+	ctx, span := c.cfg.Tracer.Start(ctx, GetEnabledTenantSlugsOperation,
 		trace.WithAttributes(otelAttrs...),
 		clientSpanKind,
 	)
@@ -670,7 +408,7 @@ func (c *Client) sendGetActiveTenantSlugs(ctx context.Context) (res GetActiveTen
 		var satisfied bitset
 		{
 			stage = "Security:BearerAuth"
-			switch err := c.securityBearerAuth(ctx, GetActiveTenantSlugsOperation, r); {
+			switch err := c.securityBearerAuth(ctx, GetEnabledTenantSlugsOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -707,7 +445,7 @@ func (c *Client) sendGetActiveTenantSlugs(ctx context.Context) (res GetActiveTen
 	defer body.Close()
 
 	stage = "DecodeResponse"
-	result, err := decodeGetActiveTenantSlugsResponse(resp)
+	result, err := decodeGetEnabledTenantSlugsResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -922,16 +660,16 @@ func (c *Client) sendGetTenantList(ctx context.Context, params GetTenantListPara
 		}
 	}
 	{
-		// Encode "status" parameter.
+		// Encode "enabled" parameter.
 		cfg := uri.QueryParameterEncodingConfig{
-			Name:    "status",
+			Name:    "enabled",
 			Style:   uri.QueryStyleForm,
 			Explode: true,
 		}
 
 		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
-			if val, ok := params.Status.Get(); ok {
-				return e.EncodeValue(conv.StringToString(string(val)))
+			if val, ok := params.Enabled.Get(); ok {
+				return e.EncodeValue(conv.BoolToString(val))
 			}
 			return nil
 		}); err != nil {

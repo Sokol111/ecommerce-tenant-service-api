@@ -13,15 +13,6 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
-// ActivateTenant implements activateTenant operation.
-//
-// Activate a deactivated tenant.
-//
-// POST /v1/tenant/activate/{slug}
-func (UnimplementedHandler) ActivateTenant(ctx context.Context, params ActivateTenantParams) (r ActivateTenantRes, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
 // CreateTenant implements createTenant operation.
 //
 // Create a new tenant.
@@ -31,18 +22,9 @@ func (UnimplementedHandler) CreateTenant(ctx context.Context, req *CreateTenantR
 	return r, ht.ErrNotImplemented
 }
 
-// DeactivateTenant implements deactivateTenant operation.
-//
-// Deactivate a tenant.
-//
-// POST /v1/tenant/deactivate/{slug}
-func (UnimplementedHandler) DeactivateTenant(ctx context.Context, params DeactivateTenantParams) (r DeactivateTenantRes, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
 // DeleteTenant implements deleteTenant operation.
 //
-// Permanently deletes a tenant. The tenant must be deactivated first.
+// Permanently deletes a tenant. The tenant must be disabled first.
 // This triggers a TenantDeleted event that causes all services to drop their tenant databases.
 //
 // DELETE /v1/tenant/delete/{slug}
@@ -50,13 +32,13 @@ func (UnimplementedHandler) DeleteTenant(ctx context.Context, params DeleteTenan
 	return r, ht.ErrNotImplemented
 }
 
-// GetActiveTenantSlugs implements getActiveTenantSlugs operation.
+// GetEnabledTenantSlugs implements getEnabledTenantSlugs operation.
 //
-// Returns a flat list of all active tenant slugs.
+// Returns a flat list of all enabled tenant slugs.
 // Used by other services on startup to discover tenants for migrations.
 //
 // GET /v1/tenant/slugs
-func (UnimplementedHandler) GetActiveTenantSlugs(ctx context.Context) (r GetActiveTenantSlugsRes, _ error) {
+func (UnimplementedHandler) GetEnabledTenantSlugs(ctx context.Context) (r GetEnabledTenantSlugsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

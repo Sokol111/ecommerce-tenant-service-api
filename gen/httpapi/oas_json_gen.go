@@ -12,82 +12,6 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-// Encode encodes ActivateTenantInternalServerError as json.
-func (s *ActivateTenantInternalServerError) Encode(e *jx.Encoder) {
-	unwrapped := (*Problem)(s)
-
-	unwrapped.Encode(e)
-}
-
-// Decode decodes ActivateTenantInternalServerError from json.
-func (s *ActivateTenantInternalServerError) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode ActivateTenantInternalServerError to nil")
-	}
-	var unwrapped Problem
-	if err := func() error {
-		if err := unwrapped.Decode(d); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		return errors.Wrap(err, "alias")
-	}
-	*s = ActivateTenantInternalServerError(unwrapped)
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s *ActivateTenantInternalServerError) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *ActivateTenantInternalServerError) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes ActivateTenantNotFound as json.
-func (s *ActivateTenantNotFound) Encode(e *jx.Encoder) {
-	unwrapped := (*Problem)(s)
-
-	unwrapped.Encode(e)
-}
-
-// Decode decodes ActivateTenantNotFound from json.
-func (s *ActivateTenantNotFound) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode ActivateTenantNotFound to nil")
-	}
-	var unwrapped Problem
-	if err := func() error {
-		if err := unwrapped.Decode(d); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		return errors.Wrap(err, "alias")
-	}
-	*s = ActivateTenantNotFound(unwrapped)
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s *ActivateTenantNotFound) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *ActivateTenantNotFound) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
 // Encode encodes CreateTenantBadRequest as json.
 func (s *CreateTenantBadRequest) Encode(e *jx.Encoder) {
 	unwrapped := (*Problem)(s)
@@ -311,82 +235,6 @@ func (s *CreateTenantRequest) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *CreateTenantRequest) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes DeactivateTenantInternalServerError as json.
-func (s *DeactivateTenantInternalServerError) Encode(e *jx.Encoder) {
-	unwrapped := (*Problem)(s)
-
-	unwrapped.Encode(e)
-}
-
-// Decode decodes DeactivateTenantInternalServerError from json.
-func (s *DeactivateTenantInternalServerError) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode DeactivateTenantInternalServerError to nil")
-	}
-	var unwrapped Problem
-	if err := func() error {
-		if err := unwrapped.Decode(d); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		return errors.Wrap(err, "alias")
-	}
-	*s = DeactivateTenantInternalServerError(unwrapped)
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s *DeactivateTenantInternalServerError) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *DeactivateTenantInternalServerError) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes DeactivateTenantNotFound as json.
-func (s *DeactivateTenantNotFound) Encode(e *jx.Encoder) {
-	unwrapped := (*Problem)(s)
-
-	unwrapped.Encode(e)
-}
-
-// Decode decodes DeactivateTenantNotFound from json.
-func (s *DeactivateTenantNotFound) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode DeactivateTenantNotFound to nil")
-	}
-	var unwrapped Problem
-	if err := func() error {
-		if err := unwrapped.Decode(d); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		return errors.Wrap(err, "alias")
-	}
-	*s = DeactivateTenantNotFound(unwrapped)
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s *DeactivateTenantNotFound) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *DeactivateTenantNotFound) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1183,6 +1031,10 @@ func (s *TenantResponse) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *TenantResponse) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("id")
+		json.EncodeUUID(e, s.ID)
+	}
+	{
 		e.FieldStart("slug")
 		e.Str(s.Slug)
 	}
@@ -1191,8 +1043,8 @@ func (s *TenantResponse) encodeFields(e *jx.Encoder) {
 		e.Str(s.Name)
 	}
 	{
-		e.FieldStart("status")
-		s.Status.Encode(e)
+		e.FieldStart("enabled")
+		e.Bool(s.Enabled)
 	}
 	{
 		e.FieldStart("version")
@@ -1208,13 +1060,14 @@ func (s *TenantResponse) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfTenantResponse = [6]string{
-	0: "slug",
-	1: "name",
-	2: "status",
-	3: "version",
-	4: "createdAt",
-	5: "modifiedAt",
+var jsonFieldsNameOfTenantResponse = [7]string{
+	0: "id",
+	1: "slug",
+	2: "name",
+	3: "enabled",
+	4: "version",
+	5: "createdAt",
+	6: "modifiedAt",
 }
 
 // Decode decodes TenantResponse from json.
@@ -1226,8 +1079,20 @@ func (s *TenantResponse) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "slug":
+		case "id":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := json.DecodeUUID(d)
+				s.ID = v
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "slug":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.Slug = string(v)
@@ -1239,7 +1104,7 @@ func (s *TenantResponse) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"slug\"")
 			}
 		case "name":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.Name = string(v)
@@ -1250,18 +1115,20 @@ func (s *TenantResponse) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
-		case "status":
-			requiredBitSet[0] |= 1 << 2
+		case "enabled":
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
-				if err := s.Status.Decode(d); err != nil {
+				v, err := d.Bool()
+				s.Enabled = bool(v)
+				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"status\"")
+				return errors.Wrap(err, "decode field \"enabled\"")
 			}
 		case "version":
-			requiredBitSet[0] |= 1 << 3
+			requiredBitSet[0] |= 1 << 4
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -1273,7 +1140,7 @@ func (s *TenantResponse) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"version\"")
 			}
 		case "createdAt":
-			requiredBitSet[0] |= 1 << 4
+			requiredBitSet[0] |= 1 << 5
 			if err := func() error {
 				v, err := json.DecodeDateTime(d)
 				s.CreatedAt = v
@@ -1285,7 +1152,7 @@ func (s *TenantResponse) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"createdAt\"")
 			}
 		case "modifiedAt":
-			requiredBitSet[0] |= 1 << 5
+			requiredBitSet[0] |= 1 << 6
 			if err := func() error {
 				v, err := json.DecodeDateTime(d)
 				s.ModifiedAt = v
@@ -1306,7 +1173,7 @@ func (s *TenantResponse) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00111111,
+		0b01111111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -1348,46 +1215,6 @@ func (s *TenantResponse) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *TenantResponse) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes TenantResponseStatus as json.
-func (s TenantResponseStatus) Encode(e *jx.Encoder) {
-	e.Str(string(s))
-}
-
-// Decode decodes TenantResponseStatus from json.
-func (s *TenantResponseStatus) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode TenantResponseStatus to nil")
-	}
-	v, err := d.StrBytes()
-	if err != nil {
-		return err
-	}
-	// Try to use constant string.
-	switch TenantResponseStatus(v) {
-	case TenantResponseStatusActive:
-		*s = TenantResponseStatusActive
-	case TenantResponseStatusDeactivated:
-		*s = TenantResponseStatusDeactivated
-	default:
-		*s = TenantResponseStatus(v)
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s TenantResponseStatus) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *TenantResponseStatus) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1670,15 +1497,20 @@ func (s *UpdateTenantRequest) encodeFields(e *jx.Encoder) {
 		e.Str(s.Name)
 	}
 	{
+		e.FieldStart("enabled")
+		e.Bool(s.Enabled)
+	}
+	{
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
 }
 
-var jsonFieldsNameOfUpdateTenantRequest = [3]string{
+var jsonFieldsNameOfUpdateTenantRequest = [4]string{
 	0: "slug",
 	1: "name",
-	2: "version",
+	2: "enabled",
+	3: "version",
 }
 
 // Decode decodes UpdateTenantRequest from json.
@@ -1714,8 +1546,20 @@ func (s *UpdateTenantRequest) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
-		case "version":
+		case "enabled":
 			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Bool()
+				s.Enabled = bool(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"enabled\"")
+			}
+		case "version":
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Int()
 				s.Version = int(v)
@@ -1736,7 +1580,7 @@ func (s *UpdateTenantRequest) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00001111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

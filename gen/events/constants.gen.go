@@ -4,9 +4,8 @@ package events
 
 // Event type constants - match Avro schema names
 const (
-	EventTypeTenantCreated     = "TenantCreatedEvent"
-	EventTypeTenantDeactivated = "TenantDeactivatedEvent"
-	EventTypeTenantDeleted     = "TenantDeletedEvent"
+	EventTypeTenantDeleted = "TenantDeletedEvent"
+	EventTypeTenantUpdated = "TenantUpdatedEvent"
 )
 
 // Topic constants - Kafka topics from Avro schemas
@@ -16,7 +15,6 @@ const (
 
 // Schema name constants - Avro schema full names (namespace.name)
 const (
-	SchemaNameTenantCreated     = "com.ecommerce.events.tenant.TenantCreatedEvent"
-	SchemaNameTenantDeactivated = "com.ecommerce.events.tenant.TenantDeactivatedEvent"
-	SchemaNameTenantDeleted     = "com.ecommerce.events.tenant.TenantDeletedEvent"
+	SchemaNameTenantDeleted = "com.ecommerce.events.tenant.TenantDeletedEvent"
+	SchemaNameTenantUpdated = "com.ecommerce.events.tenant.TenantUpdatedEvent"
 )

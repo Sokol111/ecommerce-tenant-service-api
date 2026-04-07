@@ -200,115 +200,7 @@ export const getTenantBySlug = async (slug: string, options?: RequestInit): Prom
 
 
 /**
- * @summary Deactivate a tenant
- */
-export type deactivateTenantResponse200 = {
-  data: TenantResponse
-  status: 200
-}
-
-export type deactivateTenantResponse404 = {
-  data: Problem
-  status: 404
-}
-
-export type deactivateTenantResponse500 = {
-  data: Problem
-  status: 500
-}
-    
-export type deactivateTenantResponseSuccess = (deactivateTenantResponse200) & {
-  headers: Headers;
-};
-export type deactivateTenantResponseError = (deactivateTenantResponse404 | deactivateTenantResponse500) & {
-  headers: Headers;
-};
-
-export type deactivateTenantResponse = (deactivateTenantResponseSuccess | deactivateTenantResponseError)
-
-export const getDeactivateTenantUrl = (slug: string,) => {
-
-
-  
-
-  return `/v1/tenant/deactivate/${slug}`
-}
-
-export const deactivateTenant = async (slug: string, options?: RequestInit): Promise<deactivateTenantResponse> => {
-  
-  const res = await fetch(getDeactivateTenantUrl(slug),
-  {      
-    ...options,
-    method: 'POST'
-    
-    
-  }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: deactivateTenantResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as deactivateTenantResponse
-}
-
-
-
-/**
- * @summary Activate a deactivated tenant
- */
-export type activateTenantResponse200 = {
-  data: TenantResponse
-  status: 200
-}
-
-export type activateTenantResponse404 = {
-  data: Problem
-  status: 404
-}
-
-export type activateTenantResponse500 = {
-  data: Problem
-  status: 500
-}
-    
-export type activateTenantResponseSuccess = (activateTenantResponse200) & {
-  headers: Headers;
-};
-export type activateTenantResponseError = (activateTenantResponse404 | activateTenantResponse500) & {
-  headers: Headers;
-};
-
-export type activateTenantResponse = (activateTenantResponseSuccess | activateTenantResponseError)
-
-export const getActivateTenantUrl = (slug: string,) => {
-
-
-  
-
-  return `/v1/tenant/activate/${slug}`
-}
-
-export const activateTenant = async (slug: string, options?: RequestInit): Promise<activateTenantResponse> => {
-  
-  const res = await fetch(getActivateTenantUrl(slug),
-  {      
-    ...options,
-    method: 'POST'
-    
-    
-  }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: activateTenantResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as activateTenantResponse
-}
-
-
-
-/**
- * Permanently deletes a tenant. The tenant must be deactivated first.
+ * Permanently deletes a tenant. The tenant must be disabled first.
 This triggers a TenantDeleted event that causes all services to drop their tenant databases.
 
  * @summary Delete a tenant
@@ -431,31 +323,31 @@ export const getTenantList = async (params: GetTenantListParams, options?: Reque
 
 
 /**
- * Returns a flat list of all active tenant slugs.
+ * Returns a flat list of all enabled tenant slugs.
 Used by other services on startup to discover tenants for migrations.
 
- * @summary Get all active tenant slugs
+ * @summary Get all enabled tenant slugs
  */
-export type getActiveTenantSlugsResponse200 = {
+export type getEnabledTenantSlugsResponse200 = {
   data: TenantSlugListResponse
   status: 200
 }
 
-export type getActiveTenantSlugsResponse500 = {
+export type getEnabledTenantSlugsResponse500 = {
   data: Problem
   status: 500
 }
     
-export type getActiveTenantSlugsResponseSuccess = (getActiveTenantSlugsResponse200) & {
+export type getEnabledTenantSlugsResponseSuccess = (getEnabledTenantSlugsResponse200) & {
   headers: Headers;
 };
-export type getActiveTenantSlugsResponseError = (getActiveTenantSlugsResponse500) & {
+export type getEnabledTenantSlugsResponseError = (getEnabledTenantSlugsResponse500) & {
   headers: Headers;
 };
 
-export type getActiveTenantSlugsResponse = (getActiveTenantSlugsResponseSuccess | getActiveTenantSlugsResponseError)
+export type getEnabledTenantSlugsResponse = (getEnabledTenantSlugsResponseSuccess | getEnabledTenantSlugsResponseError)
 
-export const getGetActiveTenantSlugsUrl = () => {
+export const getGetEnabledTenantSlugsUrl = () => {
 
 
   
@@ -463,9 +355,9 @@ export const getGetActiveTenantSlugsUrl = () => {
   return `/v1/tenant/slugs`
 }
 
-export const getActiveTenantSlugs = async ( options?: RequestInit): Promise<getActiveTenantSlugsResponse> => {
+export const getEnabledTenantSlugs = async ( options?: RequestInit): Promise<getEnabledTenantSlugsResponse> => {
   
-  const res = await fetch(getGetActiveTenantSlugsUrl(),
+  const res = await fetch(getGetEnabledTenantSlugsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -476,8 +368,8 @@ export const getActiveTenantSlugs = async ( options?: RequestInit): Promise<getA
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text();
   
-  const data: getActiveTenantSlugsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getActiveTenantSlugsResponse
+  const data: getEnabledTenantSlugsResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getEnabledTenantSlugsResponse
 }
 
 

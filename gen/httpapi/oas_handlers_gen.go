@@ -33,193 +33,6 @@ func (c *codeRecorder) Unwrap() http.ResponseWriter {
 	return c.ResponseWriter
 }
 
-// handleActivateTenantRequest handles activateTenant operation.
-//
-// Activate a deactivated tenant.
-//
-// POST /v1/tenant/activate/{slug}
-func (s *Server) handleActivateTenantRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
-	statusWriter := &codeRecorder{ResponseWriter: w}
-	w = statusWriter
-	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("activateTenant"),
-		semconv.HTTPRequestMethodKey.String("POST"),
-		semconv.HTTPRouteKey.String("/v1/tenant/activate/{slug}"),
-	}
-	// Add attributes from config.
-	otelAttrs = append(otelAttrs, s.cfg.Attributes...)
-
-	// Start a span for this request.
-	ctx, span := s.cfg.Tracer.Start(r.Context(), ActivateTenantOperation,
-		trace.WithAttributes(otelAttrs...),
-		serverSpanKind,
-	)
-	defer span.End()
-
-	// Add Labeler to context.
-	labeler := &Labeler{attrs: otelAttrs}
-	ctx = contextWithLabeler(ctx, labeler)
-
-	// Run stopwatch.
-	startTime := time.Now()
-	defer func() {
-		elapsedDuration := time.Since(startTime)
-
-		attrSet := labeler.AttributeSet()
-		attrs := attrSet.ToSlice()
-		code := statusWriter.status
-		if code != 0 {
-			codeAttr := semconv.HTTPResponseStatusCode(code)
-			attrs = append(attrs, codeAttr)
-			span.SetAttributes(codeAttr)
-		}
-		attrOpt := metric.WithAttributes(attrs...)
-
-		// Increment request counter.
-		s.requests.Add(ctx, 1, attrOpt)
-
-		// Use floating point division here for higher precision (instead of Millisecond method).
-		s.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), attrOpt)
-	}()
-
-	var (
-		recordError = func(stage string, err error) {
-			span.RecordError(err)
-
-			// https://opentelemetry.io/docs/specs/semconv/http/http-spans/#status
-			// Span Status MUST be left unset if HTTP status code was in the 1xx, 2xx or 3xx ranges,
-			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
-			// max redirects exceeded), in which case status MUST be set to Error.
-			code := statusWriter.status
-			if code < 100 || code >= 500 {
-				span.SetStatus(codes.Error, stage)
-			}
-
-			attrSet := labeler.AttributeSet()
-			attrs := attrSet.ToSlice()
-			if code != 0 {
-				attrs = append(attrs, semconv.HTTPResponseStatusCode(code))
-			}
-
-			s.errors.Add(ctx, 1, metric.WithAttributes(attrs...))
-		}
-		err          error
-		opErrContext = ogenerrors.OperationContext{
-			Name: ActivateTenantOperation,
-			ID:   "activateTenant",
-		}
-	)
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-			sctx, ok, err := s.securityBearerAuth(ctx, ActivateTenantOperation, r)
-			if err != nil {
-				err = &ogenerrors.SecurityError{
-					OperationContext: opErrContext,
-					Security:         "BearerAuth",
-					Err:              err,
-				}
-				defer recordError("Security:BearerAuth", err)
-				s.cfg.ErrorHandler(ctx, w, r, err)
-				return
-			}
-			if ok {
-				satisfied[0] |= 1 << 0
-				ctx = sctx
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			err = &ogenerrors.SecurityError{
-				OperationContext: opErrContext,
-				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
-			}
-			defer recordError("Security", err)
-			s.cfg.ErrorHandler(ctx, w, r, err)
-			return
-		}
-	}
-	params, err := decodeActivateTenantParams(args, argsEscaped, r)
-	if err != nil {
-		err = &ogenerrors.DecodeParamsError{
-			OperationContext: opErrContext,
-			Err:              err,
-		}
-		defer recordError("DecodeParams", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-
-	var rawBody []byte
-
-	var response ActivateTenantRes
-	if m := s.cfg.Middleware; m != nil {
-		mreq := middleware.Request{
-			Context:          ctx,
-			OperationName:    ActivateTenantOperation,
-			OperationSummary: "Activate a deactivated tenant",
-			OperationID:      "activateTenant",
-			Body:             nil,
-			RawBody:          rawBody,
-			Params: middleware.Parameters{
-				{
-					Name: "slug",
-					In:   "path",
-				}: params.Slug,
-			},
-			Raw: r,
-		}
-
-		type (
-			Request  = struct{}
-			Params   = ActivateTenantParams
-			Response = ActivateTenantRes
-		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
-			m,
-			mreq,
-			unpackActivateTenantParams,
-			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.ActivateTenant(ctx, params)
-				return response, err
-			},
-		)
-	} else {
-		response, err = s.h.ActivateTenant(ctx, params)
-	}
-	if err != nil {
-		defer recordError("Internal", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-
-	if err := encodeActivateTenantResponse(response, w, span); err != nil {
-		defer recordError("EncodeResponse", err)
-		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
-			s.cfg.ErrorHandler(ctx, w, r, err)
-		}
-		return
-	}
-}
-
 // handleCreateTenantRequest handles createTenant operation.
 //
 // Create a new tenant.
@@ -407,196 +220,9 @@ func (s *Server) handleCreateTenantRequest(args [0]string, argsEscaped bool, w h
 	}
 }
 
-// handleDeactivateTenantRequest handles deactivateTenant operation.
-//
-// Deactivate a tenant.
-//
-// POST /v1/tenant/deactivate/{slug}
-func (s *Server) handleDeactivateTenantRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
-	statusWriter := &codeRecorder{ResponseWriter: w}
-	w = statusWriter
-	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("deactivateTenant"),
-		semconv.HTTPRequestMethodKey.String("POST"),
-		semconv.HTTPRouteKey.String("/v1/tenant/deactivate/{slug}"),
-	}
-	// Add attributes from config.
-	otelAttrs = append(otelAttrs, s.cfg.Attributes...)
-
-	// Start a span for this request.
-	ctx, span := s.cfg.Tracer.Start(r.Context(), DeactivateTenantOperation,
-		trace.WithAttributes(otelAttrs...),
-		serverSpanKind,
-	)
-	defer span.End()
-
-	// Add Labeler to context.
-	labeler := &Labeler{attrs: otelAttrs}
-	ctx = contextWithLabeler(ctx, labeler)
-
-	// Run stopwatch.
-	startTime := time.Now()
-	defer func() {
-		elapsedDuration := time.Since(startTime)
-
-		attrSet := labeler.AttributeSet()
-		attrs := attrSet.ToSlice()
-		code := statusWriter.status
-		if code != 0 {
-			codeAttr := semconv.HTTPResponseStatusCode(code)
-			attrs = append(attrs, codeAttr)
-			span.SetAttributes(codeAttr)
-		}
-		attrOpt := metric.WithAttributes(attrs...)
-
-		// Increment request counter.
-		s.requests.Add(ctx, 1, attrOpt)
-
-		// Use floating point division here for higher precision (instead of Millisecond method).
-		s.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), attrOpt)
-	}()
-
-	var (
-		recordError = func(stage string, err error) {
-			span.RecordError(err)
-
-			// https://opentelemetry.io/docs/specs/semconv/http/http-spans/#status
-			// Span Status MUST be left unset if HTTP status code was in the 1xx, 2xx or 3xx ranges,
-			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
-			// max redirects exceeded), in which case status MUST be set to Error.
-			code := statusWriter.status
-			if code < 100 || code >= 500 {
-				span.SetStatus(codes.Error, stage)
-			}
-
-			attrSet := labeler.AttributeSet()
-			attrs := attrSet.ToSlice()
-			if code != 0 {
-				attrs = append(attrs, semconv.HTTPResponseStatusCode(code))
-			}
-
-			s.errors.Add(ctx, 1, metric.WithAttributes(attrs...))
-		}
-		err          error
-		opErrContext = ogenerrors.OperationContext{
-			Name: DeactivateTenantOperation,
-			ID:   "deactivateTenant",
-		}
-	)
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-			sctx, ok, err := s.securityBearerAuth(ctx, DeactivateTenantOperation, r)
-			if err != nil {
-				err = &ogenerrors.SecurityError{
-					OperationContext: opErrContext,
-					Security:         "BearerAuth",
-					Err:              err,
-				}
-				defer recordError("Security:BearerAuth", err)
-				s.cfg.ErrorHandler(ctx, w, r, err)
-				return
-			}
-			if ok {
-				satisfied[0] |= 1 << 0
-				ctx = sctx
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			err = &ogenerrors.SecurityError{
-				OperationContext: opErrContext,
-				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
-			}
-			defer recordError("Security", err)
-			s.cfg.ErrorHandler(ctx, w, r, err)
-			return
-		}
-	}
-	params, err := decodeDeactivateTenantParams(args, argsEscaped, r)
-	if err != nil {
-		err = &ogenerrors.DecodeParamsError{
-			OperationContext: opErrContext,
-			Err:              err,
-		}
-		defer recordError("DecodeParams", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-
-	var rawBody []byte
-
-	var response DeactivateTenantRes
-	if m := s.cfg.Middleware; m != nil {
-		mreq := middleware.Request{
-			Context:          ctx,
-			OperationName:    DeactivateTenantOperation,
-			OperationSummary: "Deactivate a tenant",
-			OperationID:      "deactivateTenant",
-			Body:             nil,
-			RawBody:          rawBody,
-			Params: middleware.Parameters{
-				{
-					Name: "slug",
-					In:   "path",
-				}: params.Slug,
-			},
-			Raw: r,
-		}
-
-		type (
-			Request  = struct{}
-			Params   = DeactivateTenantParams
-			Response = DeactivateTenantRes
-		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
-			m,
-			mreq,
-			unpackDeactivateTenantParams,
-			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.DeactivateTenant(ctx, params)
-				return response, err
-			},
-		)
-	} else {
-		response, err = s.h.DeactivateTenant(ctx, params)
-	}
-	if err != nil {
-		defer recordError("Internal", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
-
-	if err := encodeDeactivateTenantResponse(response, w, span); err != nil {
-		defer recordError("EncodeResponse", err)
-		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
-			s.cfg.ErrorHandler(ctx, w, r, err)
-		}
-		return
-	}
-}
-
 // handleDeleteTenantRequest handles deleteTenant operation.
 //
-// Permanently deletes a tenant. The tenant must be deactivated first.
+// Permanently deletes a tenant. The tenant must be disabled first.
 // This triggers a TenantDeleted event that causes all services to drop their tenant databases.
 //
 // DELETE /v1/tenant/delete/{slug}
@@ -782,17 +408,17 @@ func (s *Server) handleDeleteTenantRequest(args [1]string, argsEscaped bool, w h
 	}
 }
 
-// handleGetActiveTenantSlugsRequest handles getActiveTenantSlugs operation.
+// handleGetEnabledTenantSlugsRequest handles getEnabledTenantSlugs operation.
 //
-// Returns a flat list of all active tenant slugs.
+// Returns a flat list of all enabled tenant slugs.
 // Used by other services on startup to discover tenants for migrations.
 //
 // GET /v1/tenant/slugs
-func (s *Server) handleGetActiveTenantSlugsRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetEnabledTenantSlugsRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("getActiveTenantSlugs"),
+		otelogen.OperationID("getEnabledTenantSlugs"),
 		semconv.HTTPRequestMethodKey.String("GET"),
 		semconv.HTTPRouteKey.String("/v1/tenant/slugs"),
 	}
@@ -800,7 +426,7 @@ func (s *Server) handleGetActiveTenantSlugsRequest(args [0]string, argsEscaped b
 	otelAttrs = append(otelAttrs, s.cfg.Attributes...)
 
 	// Start a span for this request.
-	ctx, span := s.cfg.Tracer.Start(r.Context(), GetActiveTenantSlugsOperation,
+	ctx, span := s.cfg.Tracer.Start(r.Context(), GetEnabledTenantSlugsOperation,
 		trace.WithAttributes(otelAttrs...),
 		serverSpanKind,
 	)
@@ -855,15 +481,15 @@ func (s *Server) handleGetActiveTenantSlugsRequest(args [0]string, argsEscaped b
 		}
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: GetActiveTenantSlugsOperation,
-			ID:   "getActiveTenantSlugs",
+			Name: GetEnabledTenantSlugsOperation,
+			ID:   "getEnabledTenantSlugs",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityBearerAuth(ctx, GetActiveTenantSlugsOperation, r)
+			sctx, ok, err := s.securityBearerAuth(ctx, GetEnabledTenantSlugsOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -906,13 +532,13 @@ func (s *Server) handleGetActiveTenantSlugsRequest(args [0]string, argsEscaped b
 
 	var rawBody []byte
 
-	var response GetActiveTenantSlugsRes
+	var response GetEnabledTenantSlugsRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    GetActiveTenantSlugsOperation,
-			OperationSummary: "Get all active tenant slugs",
-			OperationID:      "getActiveTenantSlugs",
+			OperationName:    GetEnabledTenantSlugsOperation,
+			OperationSummary: "Get all enabled tenant slugs",
+			OperationID:      "getEnabledTenantSlugs",
 			Body:             nil,
 			RawBody:          rawBody,
 			Params:           middleware.Parameters{},
@@ -922,7 +548,7 @@ func (s *Server) handleGetActiveTenantSlugsRequest(args [0]string, argsEscaped b
 		type (
 			Request  = struct{}
 			Params   = struct{}
-			Response = GetActiveTenantSlugsRes
+			Response = GetEnabledTenantSlugsRes
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -933,12 +559,12 @@ func (s *Server) handleGetActiveTenantSlugsRequest(args [0]string, argsEscaped b
 			mreq,
 			nil,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.GetActiveTenantSlugs(ctx)
+				response, err = s.h.GetEnabledTenantSlugs(ctx)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.GetActiveTenantSlugs(ctx)
+		response, err = s.h.GetEnabledTenantSlugs(ctx)
 	}
 	if err != nil {
 		defer recordError("Internal", err)
@@ -946,7 +572,7 @@ func (s *Server) handleGetActiveTenantSlugsRequest(args [0]string, argsEscaped b
 		return
 	}
 
-	if err := encodeGetActiveTenantSlugsResponse(response, w, span); err != nil {
+	if err := encodeGetEnabledTenantSlugsResponse(response, w, span); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
@@ -1294,9 +920,9 @@ func (s *Server) handleGetTenantListRequest(args [0]string, argsEscaped bool, w 
 					In:   "query",
 				}: params.Size,
 				{
-					Name: "status",
+					Name: "enabled",
 					In:   "query",
-				}: params.Status,
+				}: params.Enabled,
 				{
 					Name: "sort",
 					In:   "query",

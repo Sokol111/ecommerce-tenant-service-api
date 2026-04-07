@@ -6,12 +6,10 @@ package httpapi
 type OperationName = string
 
 const (
-	ActivateTenantOperation       OperationName = "ActivateTenant"
-	CreateTenantOperation         OperationName = "CreateTenant"
-	DeactivateTenantOperation     OperationName = "DeactivateTenant"
-	DeleteTenantOperation         OperationName = "DeleteTenant"
-	GetActiveTenantSlugsOperation OperationName = "GetActiveTenantSlugs"
-	GetTenantBySlugOperation      OperationName = "GetTenantBySlug"
-	GetTenantListOperation        OperationName = "GetTenantList"
-	UpdateTenantOperation         OperationName = "UpdateTenant"
+	CreateTenantOperation          OperationName = "CreateTenant"
+	DeleteTenantOperation          OperationName = "DeleteTenant"
+	GetEnabledTenantSlugsOperation OperationName = "GetEnabledTenantSlugs"
+	GetTenantBySlugOperation       OperationName = "GetTenantBySlug"
+	GetTenantListOperation         OperationName = "GetTenantList"
+	UpdateTenantOperation          OperationName = "UpdateTenant"
 )

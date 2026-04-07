@@ -28,9 +28,9 @@ page: number;
  */
 size: number;
 /**
- * Filter by status
+ * Filter by enabled state
  */
-status?: GetTenantListStatus;
+enabled?: boolean;
 /**
  * Field to sort by
  */
@@ -40,15 +40,6 @@ sort?: GetTenantListSort;
  */
 order?: GetTenantListOrder;
 };
-
-export type GetTenantListStatus = typeof GetTenantListStatus[keyof typeof GetTenantListStatus];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const GetTenantListStatus = {
-  active: 'active',
-  deactivated: 'deactivated',
-} as const;
 
 export type GetTenantListSort = typeof GetTenantListSort[keyof typeof GetTenantListSort];
 
@@ -112,6 +103,7 @@ export interface UpdateTenantRequest {
    * @maxLength 200
    */
   name: string;
+  enabled: boolean;
   /**
    * Optimistic locking version
    * @minimum 1
@@ -119,19 +111,11 @@ export interface UpdateTenantRequest {
   version: number;
 }
 
-export type TenantResponseStatus = typeof TenantResponseStatus[keyof typeof TenantResponseStatus];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const TenantResponseStatus = {
-  active: 'active',
-  deactivated: 'deactivated',
-} as const;
-
 export interface TenantResponse {
+  id: string;
   slug: string;
   name: string;
-  status: TenantResponseStatus;
+  enabled: boolean;
   version: number;
   createdAt: string;
   modifiedAt: string;
@@ -148,7 +132,7 @@ export interface TenantListResponse {
 }
 
 export interface TenantSlugListResponse {
-  /** List of active tenant slugs */
+  /** List of enabled tenant slugs */
   slugs: string[];
 }
 

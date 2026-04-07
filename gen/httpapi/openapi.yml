@@ -59,25 +59,27 @@ components:
         TenantResponse:
             type: object
             required:
+                - id
                 - slug
                 - name
-                - status
+                - enabled
                 - version
                 - createdAt
                 - modifiedAt
             properties:
+                id:
+                    type: string
+                    format: uuid
+                    example: "550e8400-e29b-41d4-a716-446655440000"
                 slug:
                     type: string
                     example: "acme"
                 name:
                     type: string
                     example: "Acme Shop"
-                status:
-                    type: string
-                    enum:
-                        - active
-                        - deactivated
-                    example: "active"
+                enabled:
+                    type: boolean
+                    example: true
                 version:
                     type: integer
                     example: 1
@@ -102,25 +104,27 @@ components:
                     items:
                         type: object
                         required:
+                            - id
                             - slug
                             - name
-                            - status
+                            - enabled
                             - version
                             - createdAt
                             - modifiedAt
                         properties:
+                            id:
+                                type: string
+                                format: uuid
+                                example: "550e8400-e29b-41d4-a716-446655440000"
                             slug:
                                 type: string
                                 example: "acme"
                             name:
                                 type: string
                                 example: "Acme Shop"
-                            status:
-                                type: string
-                                enum:
-                                    - active
-                                    - deactivated
-                                example: "active"
+                            enabled:
+                                type: boolean
+                                example: true
                             version:
                                 type: integer
                                 example: 1
@@ -154,7 +158,7 @@ components:
                     items:
                         type: string
                     example: ["acme", "globex"]
-                    description: List of active tenant slugs
+                    description: List of enabled tenant slugs
         CreateTenantRequest:
             type: object
             required:
@@ -178,6 +182,7 @@ components:
             required:
                 - slug
                 - name
+                - enabled
                 - version
             properties:
                 slug:
@@ -188,6 +193,9 @@ components:
                     example: "Acme Shop"
                     minLength: 2
                     maxLength: 200
+                enabled:
+                    type: boolean
+                    example: true
                 version:
                     type: integer
                     example: 1

@@ -7,15 +7,8 @@ import (
 	"time"
 
 	"github.com/go-faster/errors"
+	"github.com/google/uuid"
 )
-
-type ActivateTenantInternalServerError Problem
-
-func (*ActivateTenantInternalServerError) activateTenantRes() {}
-
-type ActivateTenantNotFound Problem
-
-func (*ActivateTenantNotFound) activateTenantRes() {}
 
 type BearerAuth struct {
 	Token string
@@ -82,14 +75,6 @@ func (s *CreateTenantRequest) SetSlug(val string) {
 func (s *CreateTenantRequest) SetName(val string) {
 	s.Name = val
 }
-
-type DeactivateTenantInternalServerError Problem
-
-func (*DeactivateTenantInternalServerError) deactivateTenantRes() {}
-
-type DeactivateTenantNotFound Problem
-
-func (*DeactivateTenantNotFound) deactivateTenantRes() {}
 
 type DeleteTenantBadRequest Problem
 
@@ -213,45 +198,50 @@ func (s *GetTenantListSort) UnmarshalText(data []byte) error {
 	}
 }
 
-type GetTenantListStatus string
-
-const (
-	GetTenantListStatusActive      GetTenantListStatus = "active"
-	GetTenantListStatusDeactivated GetTenantListStatus = "deactivated"
-)
-
-// AllValues returns all GetTenantListStatus values.
-func (GetTenantListStatus) AllValues() []GetTenantListStatus {
-	return []GetTenantListStatus{
-		GetTenantListStatusActive,
-		GetTenantListStatusDeactivated,
+// NewOptBool returns new OptBool with value set to v.
+func NewOptBool(v bool) OptBool {
+	return OptBool{
+		Value: v,
+		Set:   true,
 	}
 }
 
-// MarshalText implements encoding.TextMarshaler.
-func (s GetTenantListStatus) MarshalText() ([]byte, error) {
-	switch s {
-	case GetTenantListStatusActive:
-		return []byte(s), nil
-	case GetTenantListStatusDeactivated:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
+// OptBool is optional bool.
+type OptBool struct {
+	Value bool
+	Set   bool
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *GetTenantListStatus) UnmarshalText(data []byte) error {
-	switch GetTenantListStatus(data) {
-	case GetTenantListStatusActive:
-		*s = GetTenantListStatusActive
-		return nil
-	case GetTenantListStatusDeactivated:
-		*s = GetTenantListStatusDeactivated
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
+// IsSet returns true if OptBool was set.
+func (o OptBool) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptBool) Reset() {
+	var v bool
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptBool) SetTo(v bool) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptBool) Get() (v bool, ok bool) {
+	if !o.Set {
+		return v, false
 	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
 }
 
 // NewOptGetTenantListOrder returns new OptGetTenantListOrder with value set to v.
@@ -340,52 +330,6 @@ func (o OptGetTenantListSort) Get() (v GetTenantListSort, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptGetTenantListSort) Or(d GetTenantListSort) GetTenantListSort {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptGetTenantListStatus returns new OptGetTenantListStatus with value set to v.
-func NewOptGetTenantListStatus(v GetTenantListStatus) OptGetTenantListStatus {
-	return OptGetTenantListStatus{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptGetTenantListStatus is optional GetTenantListStatus.
-type OptGetTenantListStatus struct {
-	Value GetTenantListStatus
-	Set   bool
-}
-
-// IsSet returns true if OptGetTenantListStatus was set.
-func (o OptGetTenantListStatus) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptGetTenantListStatus) Reset() {
-	var v GetTenantListStatus
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptGetTenantListStatus) SetTo(v GetTenantListStatus) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptGetTenantListStatus) Get() (v GetTenantListStatus, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptGetTenantListStatus) Or(d GetTenantListStatus) GetTenantListStatus {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -566,7 +510,7 @@ func (s *Problem) SetErrors(val []ProblemErrorsItem) {
 	s.Errors = val
 }
 
-func (*Problem) getActiveTenantSlugsRes() {}
+func (*Problem) getEnabledTenantSlugsRes() {}
 
 type ProblemErrorsItem struct {
 	Field   OptString `json:"field"`
@@ -648,12 +592,18 @@ func (*TenantListResponse) getTenantListRes() {}
 
 // Ref: #/components/schemas/TenantResponse
 type TenantResponse struct {
-	Slug       string               `json:"slug"`
-	Name       string               `json:"name"`
-	Status     TenantResponseStatus `json:"status"`
-	Version    int                  `json:"version"`
-	CreatedAt  time.Time            `json:"createdAt"`
-	ModifiedAt time.Time            `json:"modifiedAt"`
+	ID         uuid.UUID `json:"id"`
+	Slug       string    `json:"slug"`
+	Name       string    `json:"name"`
+	Enabled    bool      `json:"enabled"`
+	Version    int       `json:"version"`
+	CreatedAt  time.Time `json:"createdAt"`
+	ModifiedAt time.Time `json:"modifiedAt"`
+}
+
+// GetID returns the value of ID.
+func (s *TenantResponse) GetID() uuid.UUID {
+	return s.ID
 }
 
 // GetSlug returns the value of Slug.
@@ -666,9 +616,9 @@ func (s *TenantResponse) GetName() string {
 	return s.Name
 }
 
-// GetStatus returns the value of Status.
-func (s *TenantResponse) GetStatus() TenantResponseStatus {
-	return s.Status
+// GetEnabled returns the value of Enabled.
+func (s *TenantResponse) GetEnabled() bool {
+	return s.Enabled
 }
 
 // GetVersion returns the value of Version.
@@ -686,6 +636,11 @@ func (s *TenantResponse) GetModifiedAt() time.Time {
 	return s.ModifiedAt
 }
 
+// SetID sets the value of ID.
+func (s *TenantResponse) SetID(val uuid.UUID) {
+	s.ID = val
+}
+
 // SetSlug sets the value of Slug.
 func (s *TenantResponse) SetSlug(val string) {
 	s.Slug = val
@@ -696,9 +651,9 @@ func (s *TenantResponse) SetName(val string) {
 	s.Name = val
 }
 
-// SetStatus sets the value of Status.
-func (s *TenantResponse) SetStatus(val TenantResponseStatus) {
-	s.Status = val
+// SetEnabled sets the value of Enabled.
+func (s *TenantResponse) SetEnabled(val bool) {
+	s.Enabled = val
 }
 
 // SetVersion sets the value of Version.
@@ -716,56 +671,13 @@ func (s *TenantResponse) SetModifiedAt(val time.Time) {
 	s.ModifiedAt = val
 }
 
-func (*TenantResponse) activateTenantRes()   {}
-func (*TenantResponse) createTenantRes()     {}
-func (*TenantResponse) deactivateTenantRes() {}
-func (*TenantResponse) getTenantBySlugRes()  {}
-func (*TenantResponse) updateTenantRes()     {}
-
-type TenantResponseStatus string
-
-const (
-	TenantResponseStatusActive      TenantResponseStatus = "active"
-	TenantResponseStatusDeactivated TenantResponseStatus = "deactivated"
-)
-
-// AllValues returns all TenantResponseStatus values.
-func (TenantResponseStatus) AllValues() []TenantResponseStatus {
-	return []TenantResponseStatus{
-		TenantResponseStatusActive,
-		TenantResponseStatusDeactivated,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s TenantResponseStatus) MarshalText() ([]byte, error) {
-	switch s {
-	case TenantResponseStatusActive:
-		return []byte(s), nil
-	case TenantResponseStatusDeactivated:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *TenantResponseStatus) UnmarshalText(data []byte) error {
-	switch TenantResponseStatus(data) {
-	case TenantResponseStatusActive:
-		*s = TenantResponseStatusActive
-		return nil
-	case TenantResponseStatusDeactivated:
-		*s = TenantResponseStatusDeactivated
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
+func (*TenantResponse) createTenantRes()    {}
+func (*TenantResponse) getTenantBySlugRes() {}
+func (*TenantResponse) updateTenantRes()    {}
 
 // Ref: #/components/schemas/TenantSlugListResponse
 type TenantSlugListResponse struct {
-	// List of active tenant slugs.
+	// List of enabled tenant slugs.
 	Slugs []string `json:"slugs"`
 }
 
@@ -779,7 +691,7 @@ func (s *TenantSlugListResponse) SetSlugs(val []string) {
 	s.Slugs = val
 }
 
-func (*TenantSlugListResponse) getActiveTenantSlugsRes() {}
+func (*TenantSlugListResponse) getEnabledTenantSlugsRes() {}
 
 type UpdateTenantBadRequest Problem
 
@@ -799,8 +711,9 @@ func (*UpdateTenantPreconditionFailed) updateTenantRes() {}
 
 // Ref: #/components/schemas/UpdateTenantRequest
 type UpdateTenantRequest struct {
-	Slug string `json:"slug"`
-	Name string `json:"name"`
+	Slug    string `json:"slug"`
+	Name    string `json:"name"`
+	Enabled bool   `json:"enabled"`
 	// Optimistic locking version.
 	Version int `json:"version"`
 }
@@ -813,6 +726,11 @@ func (s *UpdateTenantRequest) GetSlug() string {
 // GetName returns the value of Name.
 func (s *UpdateTenantRequest) GetName() string {
 	return s.Name
+}
+
+// GetEnabled returns the value of Enabled.
+func (s *UpdateTenantRequest) GetEnabled() bool {
+	return s.Enabled
 }
 
 // GetVersion returns the value of Version.
@@ -828,6 +746,11 @@ func (s *UpdateTenantRequest) SetSlug(val string) {
 // SetName sets the value of Name.
 func (s *UpdateTenantRequest) SetName(val string) {
 	s.Name = val
+}
+
+// SetEnabled sets the value of Enabled.
+func (s *UpdateTenantRequest) SetEnabled(val bool) {
+	s.Enabled = val
 }
 
 // SetVersion sets the value of Version.

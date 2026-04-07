@@ -14,138 +14,6 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-// ActivateTenantParams is parameters of activateTenant operation.
-type ActivateTenantParams struct {
-	// Tenant slug.
-	Slug string
-}
-
-func unpackActivateTenantParams(packed middleware.Parameters) (params ActivateTenantParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "slug",
-			In:   "path",
-		}
-		params.Slug = packed[key].(string)
-	}
-	return params
-}
-
-func decodeActivateTenantParams(args [1]string, argsEscaped bool, r *http.Request) (params ActivateTenantParams, _ error) {
-	// Decode path: slug.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "slug",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.Slug = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "slug",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
-// DeactivateTenantParams is parameters of deactivateTenant operation.
-type DeactivateTenantParams struct {
-	// Tenant slug.
-	Slug string
-}
-
-func unpackDeactivateTenantParams(packed middleware.Parameters) (params DeactivateTenantParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "slug",
-			In:   "path",
-		}
-		params.Slug = packed[key].(string)
-	}
-	return params
-}
-
-func decodeDeactivateTenantParams(args [1]string, argsEscaped bool, r *http.Request) (params DeactivateTenantParams, _ error) {
-	// Decode path: slug.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "slug",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.Slug = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "slug",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
 // DeleteTenantParams is parameters of deleteTenant operation.
 type DeleteTenantParams struct {
 	// Tenant slug.
@@ -284,8 +152,8 @@ type GetTenantListParams struct {
 	Page int
 	// Number of items per page (max 100).
 	Size int
-	// Filter by status.
-	Status OptGetTenantListStatus `json:",omitempty,omitzero"`
+	// Filter by enabled state.
+	Enabled OptBool `json:",omitempty,omitzero"`
 	// Field to sort by.
 	Sort OptGetTenantListSort `json:",omitempty,omitzero"`
 	// Sort order.
@@ -309,11 +177,11 @@ func unpackGetTenantListParams(packed middleware.Parameters) (params GetTenantLi
 	}
 	{
 		key := middleware.ParameterKey{
-			Name: "status",
+			Name: "enabled",
 			In:   "query",
 		}
 		if v, ok := packed[key]; ok {
-			params.Status = v.(OptGetTenantListStatus)
+			params.Enabled = v.(OptBool)
 		}
 	}
 	{
@@ -447,58 +315,43 @@ func decodeGetTenantListParams(args [0]string, argsEscaped bool, r *http.Request
 			Err:  err,
 		}
 	}
-	// Decode query: status.
+	// Decode query: enabled.
 	if err := func() error {
 		cfg := uri.QueryParameterDecodingConfig{
-			Name:    "status",
+			Name:    "enabled",
 			Style:   uri.QueryStyleForm,
 			Explode: true,
 		}
 
 		if err := q.HasParam(cfg); err == nil {
 			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
-				var paramsDotStatusVal GetTenantListStatus
+				var paramsDotEnabledVal bool
 				if err := func() error {
 					val, err := d.DecodeValue()
 					if err != nil {
 						return err
 					}
 
-					c, err := conv.ToString(val)
+					c, err := conv.ToBool(val)
 					if err != nil {
 						return err
 					}
 
-					paramsDotStatusVal = GetTenantListStatus(c)
+					paramsDotEnabledVal = c
 					return nil
 				}(); err != nil {
 					return err
 				}
-				params.Status.SetTo(paramsDotStatusVal)
+				params.Enabled.SetTo(paramsDotEnabledVal)
 				return nil
 			}); err != nil {
-				return err
-			}
-			if err := func() error {
-				if value, ok := params.Status.Get(); ok {
-					if err := func() error {
-						if err := value.Validate(); err != nil {
-							return err
-						}
-						return nil
-					}(); err != nil {
-						return err
-					}
-				}
-				return nil
-			}(); err != nil {
 				return err
 			}
 		}
 		return nil
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
-			Name: "status",
+			Name: "enabled",
 			In:   "query",
 			Err:  err,
 		}

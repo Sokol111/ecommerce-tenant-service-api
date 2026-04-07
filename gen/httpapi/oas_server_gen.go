@@ -8,38 +8,26 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
-	// ActivateTenant implements activateTenant operation.
-	//
-	// Activate a deactivated tenant.
-	//
-	// POST /v1/tenant/activate/{slug}
-	ActivateTenant(ctx context.Context, params ActivateTenantParams) (ActivateTenantRes, error)
 	// CreateTenant implements createTenant operation.
 	//
 	// Create a new tenant.
 	//
 	// POST /v1/tenant/create
 	CreateTenant(ctx context.Context, req *CreateTenantRequest) (CreateTenantRes, error)
-	// DeactivateTenant implements deactivateTenant operation.
-	//
-	// Deactivate a tenant.
-	//
-	// POST /v1/tenant/deactivate/{slug}
-	DeactivateTenant(ctx context.Context, params DeactivateTenantParams) (DeactivateTenantRes, error)
 	// DeleteTenant implements deleteTenant operation.
 	//
-	// Permanently deletes a tenant. The tenant must be deactivated first.
+	// Permanently deletes a tenant. The tenant must be disabled first.
 	// This triggers a TenantDeleted event that causes all services to drop their tenant databases.
 	//
 	// DELETE /v1/tenant/delete/{slug}
 	DeleteTenant(ctx context.Context, params DeleteTenantParams) (DeleteTenantRes, error)
-	// GetActiveTenantSlugs implements getActiveTenantSlugs operation.
+	// GetEnabledTenantSlugs implements getEnabledTenantSlugs operation.
 	//
-	// Returns a flat list of all active tenant slugs.
+	// Returns a flat list of all enabled tenant slugs.
 	// Used by other services on startup to discover tenants for migrations.
 	//
 	// GET /v1/tenant/slugs
-	GetActiveTenantSlugs(ctx context.Context) (GetActiveTenantSlugsRes, error)
+	GetEnabledTenantSlugs(ctx context.Context) (GetEnabledTenantSlugsRes, error)
 	// GetTenantBySlug implements getTenantBySlug operation.
 	//
 	// Get a tenant by slug.

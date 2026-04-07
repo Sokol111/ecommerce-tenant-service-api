@@ -21,13 +21,10 @@ func Module() fx.Option {
 }
 
 func registerEvents(registry events.EventRegistry) {
-	registry.Register(SchemaNameTenantCreated, func() events.Event {
-		return &TenantCreatedEvent{}
-	})
-	registry.Register(SchemaNameTenantDeactivated, func() events.Event {
-		return &TenantDeactivatedEvent{}
-	})
 	registry.Register(SchemaNameTenantDeleted, func() events.Event {
 		return &TenantDeletedEvent{}
+	})
+	registry.Register(SchemaNameTenantUpdated, func() events.Event {
+		return &TenantUpdatedEvent{}
 	})
 }

@@ -6,11 +6,8 @@ import _ "embed"
 
 // Event schemas with EventMetadata inlined (ready for Avro serialization)
 //
-//go:embed schemas/tenant_created.avsc
-var TenantCreatedSchema []byte
-
-//go:embed schemas/tenant_deactivated.avsc
-var TenantDeactivatedSchema []byte
-
 //go:embed schemas/tenant_deleted.avsc
 var TenantDeletedSchema []byte
+
+//go:embed schemas/tenant_updated.avsc
+var TenantUpdatedSchema []byte

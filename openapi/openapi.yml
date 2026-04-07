@@ -19,10 +19,6 @@ paths:
     $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1update"
   /v1/tenant/get/{slug}:
     $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1get~1{slug}"
-  /v1/tenant/deactivate/{slug}:
-    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1deactivate~1{slug}"
-  /v1/tenant/activate/{slug}:
-    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1activate~1{slug}"
   /v1/tenant/delete/{slug}:
     $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1delete~1{slug}"
   /v1/tenant/list:

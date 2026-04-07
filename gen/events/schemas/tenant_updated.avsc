@@ -1,5 +1,5 @@
 {
-  "doc": "Event envelope for TenantCreated",
+  "doc": "Event envelope for TenantUpdated",
   "fields": [
     {
       "doc": "Event metadata containing technical and observability fields",
@@ -52,11 +52,16 @@
       }
     },
     {
-      "doc": "Business data for TenantCreated event",
+      "doc": "Business data for TenantUpdated event",
       "name": "payload",
       "type": {
-        "doc": "Published when a new tenant is created. Services should run migrations for the new tenant database.",
+        "doc": "Full tenant snapshot published on create and update. Query services should upsert their local tenant data. Use version for conflict resolution when events arrive out of order.",
         "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "doc": "Unique tenant identifier (UUID)"
+          },
           {
             "name": "slug",
             "type": "string",
@@ -68,17 +73,38 @@
             "doc": "Display name of the tenant"
           },
           {
+            "name": "enabled",
+            "type": "boolean",
+            "doc": "Whether the tenant is enabled"
+          },
+          {
+            "name": "version",
+            "type": "int",
+            "doc": "Entity version for conflict resolution. Only apply if incoming version \u003e stored version."
+          },
+          {
             "name": "created_at",
-            "type": "string",
-            "doc": "ISO-8601 timestamp of creation"
+            "type": {
+              "logicalType": "timestamp-millis",
+              "type": "long"
+            },
+            "doc": "Tenant creation timestamp"
+          },
+          {
+            "name": "modified_at",
+            "type": {
+              "logicalType": "timestamp-millis",
+              "type": "long"
+            },
+            "doc": "Tenant last modification timestamp"
           }
         ],
-        "name": "TenantCreatedPayload",
+        "name": "TenantUpdatedPayload",
         "type": "record"
       }
     }
   ],
-  "name": "TenantCreatedEvent",
+  "name": "TenantUpdatedEvent",
   "namespace": "com.ecommerce.events.tenant",
   "type": "record"
 }

@@ -120,81 +120,11 @@ paths:
               schema:
                 $ref: "../schemas/common.yml#/components/schemas/Problem"
 
-  /v1/tenant/deactivate/{slug}:
-    post:
-      summary: Deactivate a tenant
-      operationId: deactivateTenant
-      tags:
-        - Tenants
-      security:
-        - BearerAuth: [tenants:write]
-      parameters:
-        - name: slug
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Tenant slug
-      responses:
-        "200":
-          description: Tenant deactivated successfully
-          content:
-            application/json:
-              schema:
-                $ref: "../schemas/tenant.yml#/components/schemas/TenantResponse"
-        "404":
-          description: Tenant not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: "../schemas/common.yml#/components/schemas/Problem"
-        "500":
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: "../schemas/common.yml#/components/schemas/Problem"
-
-  /v1/tenant/activate/{slug}:
-    post:
-      summary: Activate a deactivated tenant
-      operationId: activateTenant
-      tags:
-        - Tenants
-      security:
-        - BearerAuth: [tenants:write]
-      parameters:
-        - name: slug
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Tenant slug
-      responses:
-        "200":
-          description: Tenant activated successfully
-          content:
-            application/json:
-              schema:
-                $ref: "../schemas/tenant.yml#/components/schemas/TenantResponse"
-        "404":
-          description: Tenant not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: "../schemas/common.yml#/components/schemas/Problem"
-        "500":
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: "../schemas/common.yml#/components/schemas/Problem"
-
   /v1/tenant/delete/{slug}:
     delete:
       summary: Delete a tenant
       description: |
-        Permanently deletes a tenant. The tenant must be deactivated first.
+        Permanently deletes a tenant. The tenant must be disabled first.
         This triggers a TenantDeleted event that causes all services to drop their tenant databases.
       operationId: deleteTenant
       tags:
@@ -212,7 +142,7 @@ paths:
         "204":
           description: Tenant deleted successfully
         "400":
-          description: Tenant must be deactivated before deletion
+          description: Tenant must be disabled before deletion
           content:
             application/problem+json:
               schema:
@@ -256,13 +186,12 @@ paths:
             maximum: 100
             example: 20
           description: Number of items per page (max 100)
-        - name: status
+        - name: enabled
           in: query
           required: false
           schema:
-            type: string
-            enum: [active, deactivated]
-          description: Filter by status
+            type: boolean
+          description: Filter by enabled state
         - name: sort
           in: query
           required: false
@@ -302,18 +231,18 @@ paths:
 
   /v1/tenant/slugs:
     get:
-      summary: Get all active tenant slugs
+      summary: Get all enabled tenant slugs
       description: |
-        Returns a flat list of all active tenant slugs.
+        Returns a flat list of all enabled tenant slugs.
         Used by other services on startup to discover tenants for migrations.
-      operationId: getActiveTenantSlugs
+      operationId: getEnabledTenantSlugs
       tags:
         - Tenants
       security:
         - BearerAuth: [tenants:read]
       responses:
         "200":
-          description: List of active tenant slugs
+          description: List of enabled tenant slugs
           content:
             application/json:
               schema:

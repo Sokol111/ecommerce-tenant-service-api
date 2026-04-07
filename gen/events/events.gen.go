@@ -4,50 +4,6 @@ package events
 
 import events "github.com/Sokol111/ecommerce-commons/pkg/messaging/kafka/events"
 
-// TenantCreatedEvent is the event envelope for TenantCreated.
-type TenantCreatedEvent struct {
-	Metadata events.EventMetadata `avro:"metadata" json:"metadata"`
-	Payload  TenantCreatedPayload `avro:"payload" json:"payload"`
-}
-
-func (e *TenantCreatedEvent) GetMetadata() *events.EventMetadata {
-	return &e.Metadata
-}
-
-func (e *TenantCreatedEvent) GetTopic() string {
-	return TopicTenantTenantEvents
-}
-
-func (e *TenantCreatedEvent) GetSchemaName() string {
-	return SchemaNameTenantCreated
-}
-
-func (e *TenantCreatedEvent) GetSchema() []byte {
-	return TenantCreatedSchema
-}
-
-// TenantDeactivatedEvent is the event envelope for TenantDeactivated.
-type TenantDeactivatedEvent struct {
-	Metadata events.EventMetadata     `avro:"metadata" json:"metadata"`
-	Payload  TenantDeactivatedPayload `avro:"payload" json:"payload"`
-}
-
-func (e *TenantDeactivatedEvent) GetMetadata() *events.EventMetadata {
-	return &e.Metadata
-}
-
-func (e *TenantDeactivatedEvent) GetTopic() string {
-	return TopicTenantTenantEvents
-}
-
-func (e *TenantDeactivatedEvent) GetSchemaName() string {
-	return SchemaNameTenantDeactivated
-}
-
-func (e *TenantDeactivatedEvent) GetSchema() []byte {
-	return TenantDeactivatedSchema
-}
-
 // TenantDeletedEvent is the event envelope for TenantDeleted.
 type TenantDeletedEvent struct {
 	Metadata events.EventMetadata `avro:"metadata" json:"metadata"`
@@ -68,4 +24,26 @@ func (e *TenantDeletedEvent) GetSchemaName() string {
 
 func (e *TenantDeletedEvent) GetSchema() []byte {
 	return TenantDeletedSchema
+}
+
+// TenantUpdatedEvent is the event envelope for TenantUpdated.
+type TenantUpdatedEvent struct {
+	Metadata events.EventMetadata `avro:"metadata" json:"metadata"`
+	Payload  TenantUpdatedPayload `avro:"payload" json:"payload"`
+}
+
+func (e *TenantUpdatedEvent) GetMetadata() *events.EventMetadata {
+	return &e.Metadata
+}
+
+func (e *TenantUpdatedEvent) GetTopic() string {
+	return TopicTenantTenantEvents
+}
+
+func (e *TenantUpdatedEvent) GetSchemaName() string {
+	return SchemaNameTenantUpdated
+}
+
+func (e *TenantUpdatedEvent) GetSchema() []byte {
+	return TenantUpdatedSchema
 }

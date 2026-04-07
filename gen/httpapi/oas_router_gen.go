@@ -11,28 +11,22 @@ import (
 )
 
 var (
-	rn2AllowedHeaders = map[string]string{
-		"POST": "Authorization",
-	}
-	rn4AllowedHeaders = map[string]string{
+	rn1AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
-	rn6AllowedHeaders = map[string]string{
-		"POST": "Authorization",
-	}
-	rn9AllowedHeaders = map[string]string{
+	rn4AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
 	}
-	rn12AllowedHeaders = map[string]string{
+	rn7AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn13AllowedHeaders = map[string]string{
+	rn8AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn10AllowedHeaders = map[string]string{
+	rn5AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn14AllowedHeaders = map[string]string{
+	rn9AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
 )
@@ -88,9 +82,34 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			switch elem[0] {
-			case 'a': // Prefix: "activate/"
+			case 'c': // Prefix: "create"
 
-				if l := len("activate/"); len(elem) >= l && elem[0:l] == "activate/" {
+				if l := len("create"); len(elem) >= l && elem[0:l] == "create" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch r.Method {
+					case "POST":
+						s.handleCreateTenantRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, notAllowedParams{
+							allowedMethods: "POST",
+							allowedHeaders: rn1AllowedHeaders,
+							acceptPost:     "application/json",
+							acceptPatch:    "",
+						})
+					}
+
+					return
+				}
+
+			case 'd': // Prefix: "delete/"
+
+				if l := len("delete/"); len(elem) >= l && elem[0:l] == "delete/" {
 					elem = elem[l:]
 				} else {
 					break
@@ -108,131 +127,20 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				if len(elem) == 0 {
 					// Leaf node.
 					switch r.Method {
-					case "POST":
-						s.handleActivateTenantRequest([1]string{
+					case "DELETE":
+						s.handleDeleteTenantRequest([1]string{
 							args[0],
 						}, elemIsEscaped, w, r)
 					default:
 						s.notAllowed(w, r, notAllowedParams{
-							allowedMethods: "POST",
-							allowedHeaders: rn2AllowedHeaders,
+							allowedMethods: "DELETE",
+							allowedHeaders: rn4AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
 					}
 
 					return
-				}
-
-			case 'c': // Prefix: "create"
-
-				if l := len("create"); len(elem) >= l && elem[0:l] == "create" {
-					elem = elem[l:]
-				} else {
-					break
-				}
-
-				if len(elem) == 0 {
-					// Leaf node.
-					switch r.Method {
-					case "POST":
-						s.handleCreateTenantRequest([0]string{}, elemIsEscaped, w, r)
-					default:
-						s.notAllowed(w, r, notAllowedParams{
-							allowedMethods: "POST",
-							allowedHeaders: rn4AllowedHeaders,
-							acceptPost:     "application/json",
-							acceptPatch:    "",
-						})
-					}
-
-					return
-				}
-
-			case 'd': // Prefix: "de"
-
-				if l := len("de"); len(elem) >= l && elem[0:l] == "de" {
-					elem = elem[l:]
-				} else {
-					break
-				}
-
-				if len(elem) == 0 {
-					break
-				}
-				switch elem[0] {
-				case 'a': // Prefix: "activate/"
-
-					if l := len("activate/"); len(elem) >= l && elem[0:l] == "activate/" {
-						elem = elem[l:]
-					} else {
-						break
-					}
-
-					// Param: "slug"
-					// Leaf parameter, slashes are prohibited
-					idx := strings.IndexByte(elem, '/')
-					if idx >= 0 {
-						break
-					}
-					args[0] = elem
-					elem = ""
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch r.Method {
-						case "POST":
-							s.handleDeactivateTenantRequest([1]string{
-								args[0],
-							}, elemIsEscaped, w, r)
-						default:
-							s.notAllowed(w, r, notAllowedParams{
-								allowedMethods: "POST",
-								allowedHeaders: rn6AllowedHeaders,
-								acceptPost:     "",
-								acceptPatch:    "",
-							})
-						}
-
-						return
-					}
-
-				case 'l': // Prefix: "lete/"
-
-					if l := len("lete/"); len(elem) >= l && elem[0:l] == "lete/" {
-						elem = elem[l:]
-					} else {
-						break
-					}
-
-					// Param: "slug"
-					// Leaf parameter, slashes are prohibited
-					idx := strings.IndexByte(elem, '/')
-					if idx >= 0 {
-						break
-					}
-					args[0] = elem
-					elem = ""
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch r.Method {
-						case "DELETE":
-							s.handleDeleteTenantRequest([1]string{
-								args[0],
-							}, elemIsEscaped, w, r)
-						default:
-							s.notAllowed(w, r, notAllowedParams{
-								allowedMethods: "DELETE",
-								allowedHeaders: rn9AllowedHeaders,
-								acceptPost:     "",
-								acceptPatch:    "",
-							})
-						}
-
-						return
-					}
-
 				}
 
 			case 'g': // Prefix: "get/"
@@ -262,7 +170,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn12AllowedHeaders,
+							allowedHeaders: rn7AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -287,7 +195,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn13AllowedHeaders,
+							allowedHeaders: rn8AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -308,11 +216,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					// Leaf node.
 					switch r.Method {
 					case "GET":
-						s.handleGetActiveTenantSlugsRequest([0]string{}, elemIsEscaped, w, r)
+						s.handleGetEnabledTenantSlugsRequest([0]string{}, elemIsEscaped, w, r)
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn10AllowedHeaders,
+							allowedHeaders: rn5AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -337,7 +245,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "PUT",
-							allowedHeaders: rn14AllowedHeaders,
+							allowedHeaders: rn9AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -446,40 +354,6 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				break
 			}
 			switch elem[0] {
-			case 'a': // Prefix: "activate/"
-
-				if l := len("activate/"); len(elem) >= l && elem[0:l] == "activate/" {
-					elem = elem[l:]
-				} else {
-					break
-				}
-
-				// Param: "slug"
-				// Leaf parameter, slashes are prohibited
-				idx := strings.IndexByte(elem, '/')
-				if idx >= 0 {
-					break
-				}
-				args[0] = elem
-				elem = ""
-
-				if len(elem) == 0 {
-					// Leaf node.
-					switch method {
-					case "POST":
-						r.name = ActivateTenantOperation
-						r.summary = "Activate a deactivated tenant"
-						r.operationID = "activateTenant"
-						r.operationGroup = ""
-						r.pathPattern = "/v1/tenant/activate/{slug}"
-						r.args = args
-						r.count = 1
-						return r, true
-					default:
-						return
-					}
-				}
-
 			case 'c': // Prefix: "create"
 
 				if l := len("create"); len(elem) >= l && elem[0:l] == "create" {
@@ -505,86 +379,38 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 				}
 
-			case 'd': // Prefix: "de"
+			case 'd': // Prefix: "delete/"
 
-				if l := len("de"); len(elem) >= l && elem[0:l] == "de" {
+				if l := len("delete/"); len(elem) >= l && elem[0:l] == "delete/" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
-				if len(elem) == 0 {
+				// Param: "slug"
+				// Leaf parameter, slashes are prohibited
+				idx := strings.IndexByte(elem, '/')
+				if idx >= 0 {
 					break
 				}
-				switch elem[0] {
-				case 'a': // Prefix: "activate/"
+				args[0] = elem
+				elem = ""
 
-					if l := len("activate/"); len(elem) >= l && elem[0:l] == "activate/" {
-						elem = elem[l:]
-					} else {
-						break
+				if len(elem) == 0 {
+					// Leaf node.
+					switch method {
+					case "DELETE":
+						r.name = DeleteTenantOperation
+						r.summary = "Delete a tenant"
+						r.operationID = "deleteTenant"
+						r.operationGroup = ""
+						r.pathPattern = "/v1/tenant/delete/{slug}"
+						r.args = args
+						r.count = 1
+						return r, true
+					default:
+						return
 					}
-
-					// Param: "slug"
-					// Leaf parameter, slashes are prohibited
-					idx := strings.IndexByte(elem, '/')
-					if idx >= 0 {
-						break
-					}
-					args[0] = elem
-					elem = ""
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch method {
-						case "POST":
-							r.name = DeactivateTenantOperation
-							r.summary = "Deactivate a tenant"
-							r.operationID = "deactivateTenant"
-							r.operationGroup = ""
-							r.pathPattern = "/v1/tenant/deactivate/{slug}"
-							r.args = args
-							r.count = 1
-							return r, true
-						default:
-							return
-						}
-					}
-
-				case 'l': // Prefix: "lete/"
-
-					if l := len("lete/"); len(elem) >= l && elem[0:l] == "lete/" {
-						elem = elem[l:]
-					} else {
-						break
-					}
-
-					// Param: "slug"
-					// Leaf parameter, slashes are prohibited
-					idx := strings.IndexByte(elem, '/')
-					if idx >= 0 {
-						break
-					}
-					args[0] = elem
-					elem = ""
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch method {
-						case "DELETE":
-							r.name = DeleteTenantOperation
-							r.summary = "Delete a tenant"
-							r.operationID = "deleteTenant"
-							r.operationGroup = ""
-							r.pathPattern = "/v1/tenant/delete/{slug}"
-							r.args = args
-							r.count = 1
-							return r, true
-						default:
-							return
-						}
-					}
-
 				}
 
 			case 'g': // Prefix: "get/"
@@ -658,9 +484,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					// Leaf node.
 					switch method {
 					case "GET":
-						r.name = GetActiveTenantSlugsOperation
-						r.summary = "Get all active tenant slugs"
-						r.operationID = "getActiveTenantSlugs"
+						r.name = GetEnabledTenantSlugsOperation
+						r.summary = "Get all enabled tenant slugs"
+						r.operationID = "getEnabledTenantSlugs"
 						r.operationGroup = ""
 						r.pathPattern = "/v1/tenant/slugs"
 						r.args = args
