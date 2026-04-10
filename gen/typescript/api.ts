@@ -7,7 +7,7 @@
 Handles tenant lifecycle: creation, update, deactivation, activation, and deletion.
 Other services use this API to discover active tenants on startup.
 
- * OpenAPI spec version: 0.0.3
+ * OpenAPI spec version: 0.0.4
  */
 import type {
   CreateTenantRequest,
