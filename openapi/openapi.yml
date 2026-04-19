@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Tenant Service API
-  version: 0.0.7
+  version: 0.0.8
   description: |
     API for managing tenants.
     
