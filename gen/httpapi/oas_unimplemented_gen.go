@@ -60,6 +60,16 @@ func (UnimplementedHandler) GetTenantList(ctx context.Context, params GetTenantL
 	return r, ht.ErrNotImplemented
 }
 
+// RegisterTenant implements registerTenant operation.
+//
+// Creates a new tenant and its initial admin user in one atomic operation.
+// The admin user is created in the identity provider with the super_admin role.
+//
+// POST /v1/tenant/register
+func (UnimplementedHandler) RegisterTenant(ctx context.Context, req *RegisterTenantRequest) (r RegisterTenantRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // UpdateTenant implements updateTenant operation.
 //
 // Update an existing tenant.

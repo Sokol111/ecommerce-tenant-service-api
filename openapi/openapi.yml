@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Tenant Service API
-  version: 0.0.8
+  version: 0.0.9
   description: |
     API for managing tenants.
     
@@ -25,6 +25,8 @@ paths:
     $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1list"
   /v1/tenant/slugs:
     $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1slugs"
+  /v1/tenant/register:
+    $ref: "./paths/tenants.yml#/paths/~1v1~1tenant~1register"
 
 components:
   securitySchemes:
@@ -46,3 +48,5 @@ components:
       $ref: "./schemas/tenant.yml#/components/schemas/CreateTenantRequest"
     UpdateTenantRequest:
       $ref: "./schemas/tenant.yml#/components/schemas/UpdateTenantRequest"
+    RegisterTenantRequest:
+      $ref: "./schemas/tenant.yml#/components/schemas/RegisterTenantRequest"

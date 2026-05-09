@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
     title: Tenant Service API
-    version: 0.0.8
+    version: 0.0.9
     description: |
         API for managing tenants.
 
@@ -201,3 +201,49 @@ components:
                     example: 1
                     minimum: 1
                     description: Optimistic locking version
+        RegisterTenantRequest:
+            type: object
+            required:
+                - slug
+                - name
+                - email
+                - password
+                - firstName
+                - lastName
+            properties:
+                slug:
+                    type: string
+                    example: "acme"
+                    minLength: 2
+                    maxLength: 63
+                    pattern: "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
+                    description: |
+                        Unique tenant identifier used as subdomain.
+                        Must be DNS-compatible: lowercase alphanumeric and hyphens,
+                        cannot start or end with a hyphen.
+                name:
+                    type: string
+                    example: "Acme Shop"
+                    minLength: 2
+                    maxLength: 200
+                email:
+                    type: string
+                    format: email
+                    example: "admin@acme.com"
+                    description: Admin user email address
+                password:
+                    type: string
+                    minLength: 8
+                    maxLength: 128
+                    example: "SecurePassword123!"
+                    description: Admin user password
+                firstName:
+                    type: string
+                    example: "John"
+                    minLength: 1
+                    maxLength: 100
+                lastName:
+                    type: string
+                    example: "Doe"
+                    minLength: 1
+                    maxLength: 100

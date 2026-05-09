@@ -7,12 +7,13 @@
 Handles tenant lifecycle: creation, update, deactivation, activation, and deletion.
 Other services use this API to discover active tenants on startup.
 
- * OpenAPI spec version: 0.0.8
+ * OpenAPI spec version: 0.0.9
  */
 import type {
   CreateTenantRequest,
   GetTenantListParams,
   Problem,
+  RegisterTenantRequest,
   TenantListResponse,
   TenantResponse,
   TenantSlugListResponse,
@@ -370,6 +371,69 @@ export const getEnabledTenantSlugs = async ( options?: RequestInit): Promise<get
   
   const data: getEnabledTenantSlugsResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as getEnabledTenantSlugsResponse
+}
+
+
+
+/**
+ * Creates a new tenant and its initial admin user in one atomic operation.
+The admin user is created in the identity provider with the super_admin role.
+
+ * @summary Register a new tenant with admin user
+ */
+export type registerTenantResponse201 = {
+  data: TenantResponse
+  status: 201
+}
+
+export type registerTenantResponse400 = {
+  data: Problem
+  status: 400
+}
+
+export type registerTenantResponse409 = {
+  data: Problem
+  status: 409
+}
+
+export type registerTenantResponse500 = {
+  data: Problem
+  status: 500
+}
+    
+export type registerTenantResponseSuccess = (registerTenantResponse201) & {
+  headers: Headers;
+};
+export type registerTenantResponseError = (registerTenantResponse400 | registerTenantResponse409 | registerTenantResponse500) & {
+  headers: Headers;
+};
+
+export type registerTenantResponse = (registerTenantResponseSuccess | registerTenantResponseError)
+
+export const getRegisterTenantUrl = () => {
+
+
+  
+
+  return `/v1/tenant/register`
+}
+
+export const registerTenant = async (registerTenantRequest: RegisterTenantRequest, options?: RequestInit): Promise<registerTenantResponse> => {
+  
+  const res = await fetch(getRegisterTenantUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      registerTenantRequest,)
+  }
+)
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  
+  const data: registerTenantResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as registerTenantResponse
 }
 
 

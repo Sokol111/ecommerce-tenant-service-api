@@ -40,6 +40,13 @@ type Handler interface {
 	//
 	// GET /v1/tenant/list
 	GetTenantList(ctx context.Context, params GetTenantListParams) (GetTenantListRes, error)
+	// RegisterTenant implements registerTenant operation.
+	//
+	// Creates a new tenant and its initial admin user in one atomic operation.
+	// The admin user is created in the identity provider with the super_admin role.
+	//
+	// POST /v1/tenant/register
+	RegisterTenant(ctx context.Context, req *RegisterTenantRequest) (RegisterTenantRes, error)
 	// UpdateTenant implements updateTenant operation.
 	//
 	// Update an existing tenant.

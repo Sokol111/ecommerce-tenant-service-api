@@ -253,3 +253,46 @@ paths:
             application/problem+json:
               schema:
                 $ref: "../schemas/common.yml#/components/schemas/Problem"
+
+  /v1/tenant/register:
+    post:
+      summary: Register a new tenant with admin user
+      description: |
+        Creates a new tenant and its initial admin user in one atomic operation.
+        The admin user is created in the identity provider with the super_admin role.
+      operationId: registerTenant
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../schemas/tenant.yml#/components/schemas/RegisterTenantRequest"
+      responses:
+        "201":
+          description: Tenant and admin user created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/TenantResponse"
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "409":
+          description: Tenant with this slug already exists
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"

@@ -23,10 +23,13 @@ var (
 	rn8AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
+	rn9AllowedHeaders = map[string]string{
+		"POST": "Authorization,Content-Type",
+	}
 	rn5AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn9AllowedHeaders = map[string]string{
+	rn10AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
 )
@@ -204,6 +207,31 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
+			case 'r': // Prefix: "register"
+
+				if l := len("register"); len(elem) >= l && elem[0:l] == "register" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch r.Method {
+					case "POST":
+						s.handleRegisterTenantRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, notAllowedParams{
+							allowedMethods: "POST",
+							allowedHeaders: rn9AllowedHeaders,
+							acceptPost:     "application/json",
+							acceptPatch:    "",
+						})
+					}
+
+					return
+				}
+
 			case 's': // Prefix: "slugs"
 
 				if l := len("slugs"); len(elem) >= l && elem[0:l] == "slugs" {
@@ -245,7 +273,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "PUT",
-							allowedHeaders: rn9AllowedHeaders,
+							allowedHeaders: rn10AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -464,6 +492,31 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.operationID = "getTenantList"
 						r.operationGroup = ""
 						r.pathPattern = "/v1/tenant/list"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
+					}
+				}
+
+			case 'r': // Prefix: "register"
+
+				if l := len("register"); len(elem) >= l && elem[0:l] == "register" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch method {
+					case "POST":
+						r.name = RegisterTenantOperation
+						r.summary = "Register a new tenant with admin user"
+						r.operationID = "registerTenant"
+						r.operationGroup = ""
+						r.pathPattern = "/v1/tenant/register"
 						r.args = args
 						r.count = 0
 						return r, true

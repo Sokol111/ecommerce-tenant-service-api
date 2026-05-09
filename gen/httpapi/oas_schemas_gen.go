@@ -537,6 +537,93 @@ func (s *ProblemErrorsItem) SetMessage(val OptString) {
 	s.Message = val
 }
 
+type RegisterTenantBadRequest Problem
+
+func (*RegisterTenantBadRequest) registerTenantRes() {}
+
+type RegisterTenantConflict Problem
+
+func (*RegisterTenantConflict) registerTenantRes() {}
+
+type RegisterTenantInternalServerError Problem
+
+func (*RegisterTenantInternalServerError) registerTenantRes() {}
+
+// Ref: #/components/schemas/RegisterTenantRequest
+type RegisterTenantRequest struct {
+	// Unique tenant identifier used as subdomain.
+	// Must be DNS-compatible: lowercase alphanumeric and hyphens,
+	// cannot start or end with a hyphen.
+	Slug string `json:"slug"`
+	Name string `json:"name"`
+	// Admin user email address.
+	Email string `json:"email"`
+	// Admin user password.
+	Password  string `json:"password"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
+// GetSlug returns the value of Slug.
+func (s *RegisterTenantRequest) GetSlug() string {
+	return s.Slug
+}
+
+// GetName returns the value of Name.
+func (s *RegisterTenantRequest) GetName() string {
+	return s.Name
+}
+
+// GetEmail returns the value of Email.
+func (s *RegisterTenantRequest) GetEmail() string {
+	return s.Email
+}
+
+// GetPassword returns the value of Password.
+func (s *RegisterTenantRequest) GetPassword() string {
+	return s.Password
+}
+
+// GetFirstName returns the value of FirstName.
+func (s *RegisterTenantRequest) GetFirstName() string {
+	return s.FirstName
+}
+
+// GetLastName returns the value of LastName.
+func (s *RegisterTenantRequest) GetLastName() string {
+	return s.LastName
+}
+
+// SetSlug sets the value of Slug.
+func (s *RegisterTenantRequest) SetSlug(val string) {
+	s.Slug = val
+}
+
+// SetName sets the value of Name.
+func (s *RegisterTenantRequest) SetName(val string) {
+	s.Name = val
+}
+
+// SetEmail sets the value of Email.
+func (s *RegisterTenantRequest) SetEmail(val string) {
+	s.Email = val
+}
+
+// SetPassword sets the value of Password.
+func (s *RegisterTenantRequest) SetPassword(val string) {
+	s.Password = val
+}
+
+// SetFirstName sets the value of FirstName.
+func (s *RegisterTenantRequest) SetFirstName(val string) {
+	s.FirstName = val
+}
+
+// SetLastName sets the value of LastName.
+func (s *RegisterTenantRequest) SetLastName(val string) {
+	s.LastName = val
+}
+
 // Ref: #/components/schemas/TenantListResponse
 type TenantListResponse struct {
 	Items []TenantResponse `json:"items"`
@@ -673,6 +760,7 @@ func (s *TenantResponse) SetModifiedAt(val time.Time) {
 
 func (*TenantResponse) createTenantRes()    {}
 func (*TenantResponse) getTenantBySlugRes() {}
+func (*TenantResponse) registerTenantRes()  {}
 func (*TenantResponse) updateTenantRes()    {}
 
 // Ref: #/components/schemas/TenantSlugListResponse

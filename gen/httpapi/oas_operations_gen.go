@@ -11,5 +11,6 @@ const (
 	GetEnabledTenantSlugsOperation OperationName = "GetEnabledTenantSlugs"
 	GetTenantBySlugOperation       OperationName = "GetTenantBySlug"
 	GetTenantListOperation         OperationName = "GetTenantList"
+	RegisterTenantOperation        OperationName = "RegisterTenant"
 	UpdateTenantOperation          OperationName = "UpdateTenant"
 )

@@ -50,6 +50,9 @@ var operationRolesBearerAuth = map[string][]string{
 	GetTenantListOperation: []string{
 		"tenants:read",
 	},
+	RegisterTenantOperation: []string{
+		"tenants:write",
+	},
 	UpdateTenantOperation: []string{
 		"tenants:write",
 	},

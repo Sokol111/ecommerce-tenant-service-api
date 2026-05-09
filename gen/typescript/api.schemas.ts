@@ -7,8 +7,9 @@
 Handles tenant lifecycle: creation, update, deactivation, activation, and deletion.
 Other services use this API to discover active tenants on startup.
 
- * OpenAPI spec version: 0.0.8
+ * OpenAPI spec version: 0.0.9
  */
+
 
 
 
@@ -134,5 +135,41 @@ export interface TenantListResponse {
 export interface TenantSlugListResponse {
   /** List of enabled tenant slugs */
   slugs: string[];
+}
+
+export interface RegisterTenantRequest {
+  /**
+   * Unique tenant identifier used as subdomain.
+Must be DNS-compatible: lowercase alphanumeric and hyphens,
+cannot start or end with a hyphen.
+
+   * @minLength 2
+   * @maxLength 63
+   * @pattern ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$
+   */
+  slug: string;
+  /**
+   * @minLength 2
+   * @maxLength 200
+   */
+  name: string;
+  /** Admin user email address */
+  email: string;
+  /**
+   * Admin user password
+   * @minLength 8
+   * @maxLength 128
+   */
+  password: string;
+  /**
+   * @minLength 1
+   * @maxLength 100
+   */
+  firstName: string;
+  /**
+   * @minLength 1
+   * @maxLength 100
+   */
+  lastName: string;
 }
 

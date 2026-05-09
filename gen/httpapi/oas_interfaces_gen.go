@@ -21,6 +21,10 @@ type GetTenantListRes interface {
 	getTenantListRes()
 }
 
+type RegisterTenantRes interface {
+	registerTenantRes()
+}
+
 type UpdateTenantRes interface {
 	updateTenantRes()
 }
