@@ -7,8 +7,9 @@
 Handles tenant lifecycle: creation, update, deactivation, activation, and deletion.
 Other services use this API to discover active tenants on startup.
 
- * OpenAPI spec version: 0.0.9
+ * OpenAPI spec version: 0.1.0
  */
+
 
 
 
@@ -171,5 +172,28 @@ cannot start or end with a hyphen.
    * @maxLength 100
    */
   lastName: string;
+}
+
+/**
+ * Current registration status
+ */
+export type RegistrationStatusResponseStatus = typeof RegistrationStatusResponseStatus[keyof typeof RegistrationStatusResponseStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const RegistrationStatusResponseStatus = {
+  provisioning: 'provisioning',
+  completed: 'completed',
+  compensating: 'compensating',
+  rolled_back: 'rolled_back',
+} as const;
+
+export interface RegistrationStatusResponse {
+  /** Tenant slug */
+  slug: string;
+  /** Current registration status */
+  status: RegistrationStatusResponseStatus;
+  /** Reason for failure (only present when status is rolled_back) */
+  failureReason?: string;
 }
 

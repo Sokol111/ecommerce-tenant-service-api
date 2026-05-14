@@ -239,6 +239,44 @@ func (s *RegisterTenantRequest) Validate() error {
 	return nil
 }
 
+func (s *RegistrationStatusResponse) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Status.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "status",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s RegistrationStatusResponseStatus) Validate() error {
+	switch s {
+	case "provisioning":
+		return nil
+	case "completed":
+		return nil
+	case "compensating":
+		return nil
+	case "rolled_back":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s *TenantListResponse) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer

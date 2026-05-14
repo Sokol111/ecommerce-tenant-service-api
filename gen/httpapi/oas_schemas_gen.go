@@ -93,6 +93,14 @@ type DeleteTenantNotFound Problem
 
 func (*DeleteTenantNotFound) deleteTenantRes() {}
 
+type GetRegistrationStatusInternalServerError Problem
+
+func (*GetRegistrationStatusInternalServerError) getRegistrationStatusRes() {}
+
+type GetRegistrationStatusNotFound Problem
+
+func (*GetRegistrationStatusNotFound) getRegistrationStatusRes() {}
+
 type GetTenantBySlugInternalServerError Problem
 
 func (*GetTenantBySlugInternalServerError) getTenantBySlugRes() {}
@@ -622,6 +630,105 @@ func (s *RegisterTenantRequest) SetFirstName(val string) {
 // SetLastName sets the value of LastName.
 func (s *RegisterTenantRequest) SetLastName(val string) {
 	s.LastName = val
+}
+
+// Ref: #/components/schemas/RegistrationStatusResponse
+type RegistrationStatusResponse struct {
+	// Tenant slug.
+	Slug string `json:"slug"`
+	// Current registration status.
+	Status RegistrationStatusResponseStatus `json:"status"`
+	// Reason for failure (only present when status is rolled_back).
+	FailureReason OptString `json:"failureReason"`
+}
+
+// GetSlug returns the value of Slug.
+func (s *RegistrationStatusResponse) GetSlug() string {
+	return s.Slug
+}
+
+// GetStatus returns the value of Status.
+func (s *RegistrationStatusResponse) GetStatus() RegistrationStatusResponseStatus {
+	return s.Status
+}
+
+// GetFailureReason returns the value of FailureReason.
+func (s *RegistrationStatusResponse) GetFailureReason() OptString {
+	return s.FailureReason
+}
+
+// SetSlug sets the value of Slug.
+func (s *RegistrationStatusResponse) SetSlug(val string) {
+	s.Slug = val
+}
+
+// SetStatus sets the value of Status.
+func (s *RegistrationStatusResponse) SetStatus(val RegistrationStatusResponseStatus) {
+	s.Status = val
+}
+
+// SetFailureReason sets the value of FailureReason.
+func (s *RegistrationStatusResponse) SetFailureReason(val OptString) {
+	s.FailureReason = val
+}
+
+func (*RegistrationStatusResponse) getRegistrationStatusRes() {}
+func (*RegistrationStatusResponse) registerTenantRes()        {}
+
+// Current registration status.
+type RegistrationStatusResponseStatus string
+
+const (
+	RegistrationStatusResponseStatusProvisioning RegistrationStatusResponseStatus = "provisioning"
+	RegistrationStatusResponseStatusCompleted    RegistrationStatusResponseStatus = "completed"
+	RegistrationStatusResponseStatusCompensating RegistrationStatusResponseStatus = "compensating"
+	RegistrationStatusResponseStatusRolledBack   RegistrationStatusResponseStatus = "rolled_back"
+)
+
+// AllValues returns all RegistrationStatusResponseStatus values.
+func (RegistrationStatusResponseStatus) AllValues() []RegistrationStatusResponseStatus {
+	return []RegistrationStatusResponseStatus{
+		RegistrationStatusResponseStatusProvisioning,
+		RegistrationStatusResponseStatusCompleted,
+		RegistrationStatusResponseStatusCompensating,
+		RegistrationStatusResponseStatusRolledBack,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s RegistrationStatusResponseStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case RegistrationStatusResponseStatusProvisioning:
+		return []byte(s), nil
+	case RegistrationStatusResponseStatusCompleted:
+		return []byte(s), nil
+	case RegistrationStatusResponseStatusCompensating:
+		return []byte(s), nil
+	case RegistrationStatusResponseStatusRolledBack:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *RegistrationStatusResponseStatus) UnmarshalText(data []byte) error {
+	switch RegistrationStatusResponseStatus(data) {
+	case RegistrationStatusResponseStatusProvisioning:
+		*s = RegistrationStatusResponseStatusProvisioning
+		return nil
+	case RegistrationStatusResponseStatusCompleted:
+		*s = RegistrationStatusResponseStatusCompleted
+		return nil
+	case RegistrationStatusResponseStatusCompensating:
+		*s = RegistrationStatusResponseStatusCompensating
+		return nil
+	case RegistrationStatusResponseStatusRolledBack:
+		*s = RegistrationStatusResponseStatusRolledBack
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // Ref: #/components/schemas/TenantListResponse

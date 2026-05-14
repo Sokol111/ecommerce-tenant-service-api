@@ -13,6 +13,10 @@ type GetEnabledTenantSlugsRes interface {
 	getEnabledTenantSlugsRes()
 }
 
+type GetRegistrationStatusRes interface {
+	getRegistrationStatusRes()
+}
+
 type GetTenantBySlugRes interface {
 	getTenantBySlugRes()
 }

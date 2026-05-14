@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
     title: Tenant Service API
-    version: 0.0.9
+    version: 0.1.0
     description: |
         API for managing tenants.
 
@@ -247,3 +247,26 @@ components:
                     example: "Doe"
                     minLength: 1
                     maxLength: 100
+        RegistrationStatusResponse:
+            type: object
+            required:
+                - slug
+                - status
+            properties:
+                slug:
+                    type: string
+                    example: "acme"
+                    description: Tenant slug
+                status:
+                    type: string
+                    enum:
+                        - provisioning
+                        - completed
+                        - compensating
+                        - rolled_back
+                    example: "completed"
+                    description: Current registration status
+                failureReason:
+                    type: string
+                    example: "User with this email already exists"
+                    description: Reason for failure (only present when status is rolled_back)

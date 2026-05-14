@@ -7,13 +7,14 @@
 Handles tenant lifecycle: creation, update, deactivation, activation, and deletion.
 Other services use this API to discover active tenants on startup.
 
- * OpenAPI spec version: 0.0.9
+ * OpenAPI spec version: 0.1.0
  */
 import type {
   CreateTenantRequest,
   GetTenantListParams,
   Problem,
   RegisterTenantRequest,
+  RegistrationStatusResponse,
   TenantListResponse,
   TenantResponse,
   TenantSlugListResponse,
@@ -378,12 +379,19 @@ export const getEnabledTenantSlugs = async ( options?: RequestInit): Promise<get
 /**
  * Creates a new tenant and its initial admin user in one atomic operation.
 The admin user is created in the identity provider with the super_admin role.
+Returns 201 if completed synchronously, or 202 if the registration is being
+processed asynchronously. Use GET /v1/tenant/registration/{slug} to poll status.
 
  * @summary Register a new tenant with admin user
  */
 export type registerTenantResponse201 = {
   data: TenantResponse
   status: 201
+}
+
+export type registerTenantResponse202 = {
+  data: RegistrationStatusResponse
+  status: 202
 }
 
 export type registerTenantResponse400 = {
@@ -401,7 +409,7 @@ export type registerTenantResponse500 = {
   status: 500
 }
     
-export type registerTenantResponseSuccess = (registerTenantResponse201) & {
+export type registerTenantResponseSuccess = (registerTenantResponse201 | registerTenantResponse202) & {
   headers: Headers;
 };
 export type registerTenantResponseError = (registerTenantResponse400 | registerTenantResponse409 | registerTenantResponse500) & {
@@ -434,6 +442,63 @@ export const registerTenant = async (registerTenantRequest: RegisterTenantReques
   
   const data: registerTenantResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as registerTenantResponse
+}
+
+
+
+/**
+ * Returns the current status of a tenant registration process.
+Use this to poll for completion after receiving a 202 from POST /v1/tenant/register.
+
+ * @summary Get tenant registration status
+ */
+export type getRegistrationStatusResponse200 = {
+  data: RegistrationStatusResponse
+  status: 200
+}
+
+export type getRegistrationStatusResponse404 = {
+  data: Problem
+  status: 404
+}
+
+export type getRegistrationStatusResponse500 = {
+  data: Problem
+  status: 500
+}
+    
+export type getRegistrationStatusResponseSuccess = (getRegistrationStatusResponse200) & {
+  headers: Headers;
+};
+export type getRegistrationStatusResponseError = (getRegistrationStatusResponse404 | getRegistrationStatusResponse500) & {
+  headers: Headers;
+};
+
+export type getRegistrationStatusResponse = (getRegistrationStatusResponseSuccess | getRegistrationStatusResponseError)
+
+export const getGetRegistrationStatusUrl = (slug: string,) => {
+
+
+  
+
+  return `/v1/tenant/registration/${slug}`
+}
+
+export const getRegistrationStatus = async (slug: string, options?: RequestInit): Promise<getRegistrationStatusResponse> => {
+  
+  const res = await fetch(getGetRegistrationStatusUrl(slug),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+)
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  
+  const data: getRegistrationStatusResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getRegistrationStatusResponse
 }
 
 

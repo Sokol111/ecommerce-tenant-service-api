@@ -28,6 +28,13 @@ type Handler interface {
 	//
 	// GET /v1/tenant/slugs
 	GetEnabledTenantSlugs(ctx context.Context) (GetEnabledTenantSlugsRes, error)
+	// GetRegistrationStatus implements getRegistrationStatus operation.
+	//
+	// Returns the current status of a tenant registration process.
+	// Use this to poll for completion after receiving a 202 from POST /v1/tenant/register.
+	//
+	// GET /v1/tenant/registration/{slug}
+	GetRegistrationStatus(ctx context.Context, params GetRegistrationStatusParams) (GetRegistrationStatusRes, error)
 	// GetTenantBySlug implements getTenantBySlug operation.
 	//
 	// Get a tenant by slug.
@@ -44,6 +51,8 @@ type Handler interface {
 	//
 	// Creates a new tenant and its initial admin user in one atomic operation.
 	// The admin user is created in the identity provider with the super_admin role.
+	// Returns 201 if completed synchronously, or 202 if the registration is being
+	// processed asynchronously. Use GET /v1/tenant/registration/{slug} to poll status.
 	//
 	// POST /v1/tenant/register
 	RegisterTenant(ctx context.Context, req *RegisterTenantRequest) (RegisterTenantRes, error)

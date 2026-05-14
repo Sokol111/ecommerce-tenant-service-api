@@ -48,6 +48,13 @@ type Invoker interface {
 	//
 	// GET /v1/tenant/slugs
 	GetEnabledTenantSlugs(ctx context.Context) (GetEnabledTenantSlugsRes, error)
+	// GetRegistrationStatus invokes getRegistrationStatus operation.
+	//
+	// Returns the current status of a tenant registration process.
+	// Use this to poll for completion after receiving a 202 from POST /v1/tenant/register.
+	//
+	// GET /v1/tenant/registration/{slug}
+	GetRegistrationStatus(ctx context.Context, params GetRegistrationStatusParams) (GetRegistrationStatusRes, error)
 	// GetTenantBySlug invokes getTenantBySlug operation.
 	//
 	// Get a tenant by slug.
@@ -64,6 +71,8 @@ type Invoker interface {
 	//
 	// Creates a new tenant and its initial admin user in one atomic operation.
 	// The admin user is created in the identity provider with the super_admin role.
+	// Returns 201 if completed synchronously, or 202 if the registration is being
+	// processed asynchronously. Use GET /v1/tenant/registration/{slug} to poll status.
 	//
 	// POST /v1/tenant/register
 	RegisterTenant(ctx context.Context, request *RegisterTenantRequest) (RegisterTenantRes, error)
@@ -460,6 +469,132 @@ func (c *Client) sendGetEnabledTenantSlugs(ctx context.Context) (res GetEnabledT
 	return result, nil
 }
 
+// GetRegistrationStatus invokes getRegistrationStatus operation.
+//
+// Returns the current status of a tenant registration process.
+// Use this to poll for completion after receiving a 202 from POST /v1/tenant/register.
+//
+// GET /v1/tenant/registration/{slug}
+func (c *Client) GetRegistrationStatus(ctx context.Context, params GetRegistrationStatusParams) (GetRegistrationStatusRes, error) {
+	res, err := c.sendGetRegistrationStatus(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetRegistrationStatus(ctx context.Context, params GetRegistrationStatusParams) (res GetRegistrationStatusRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("getRegistrationStatus"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.URLTemplateKey.String("/v1/tenant/registration/{slug}"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, GetRegistrationStatusOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [2]string
+	pathParts[0] = "/v1/tenant/registration/"
+	{
+		// Encode "slug" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "slug",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.Slug))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, GetRegistrationStatusOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeGetRegistrationStatusResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetTenantBySlug invokes getTenantBySlug operation.
 //
 // Get a tenant by slug.
@@ -779,6 +914,8 @@ func (c *Client) sendGetTenantList(ctx context.Context, params GetTenantListPara
 //
 // Creates a new tenant and its initial admin user in one atomic operation.
 // The admin user is created in the identity provider with the super_admin role.
+// Returns 201 if completed synchronously, or 202 if the registration is being
+// processed asynchronously. Use GET /v1/tenant/registration/{slug} to poll status.
 //
 // POST /v1/tenant/register
 func (c *Client) RegisterTenant(ctx context.Context, request *RegisterTenantRequest) (RegisterTenantRes, error) {

@@ -9,6 +9,7 @@ const (
 	CreateTenantOperation          OperationName = "CreateTenant"
 	DeleteTenantOperation          OperationName = "DeleteTenant"
 	GetEnabledTenantSlugsOperation OperationName = "GetEnabledTenantSlugs"
+	GetRegistrationStatusOperation OperationName = "GetRegistrationStatus"
 	GetTenantBySlugOperation       OperationName = "GetTenantBySlug"
 	GetTenantListOperation         OperationName = "GetTenantList"
 	RegisterTenantOperation        OperationName = "RegisterTenant"

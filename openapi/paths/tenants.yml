@@ -260,6 +260,8 @@ paths:
       description: |
         Creates a new tenant and its initial admin user in one atomic operation.
         The admin user is created in the identity provider with the super_admin role.
+        Returns 201 if completed synchronously, or 202 if the registration is being
+        processed asynchronously. Use GET /v1/tenant/registration/{slug} to poll status.
       operationId: registerTenant
       tags:
         - Tenants
@@ -278,6 +280,12 @@ paths:
             application/json:
               schema:
                 $ref: "../schemas/tenant.yml#/components/schemas/TenantResponse"
+        "202":
+          description: Registration accepted, processing asynchronously
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/RegistrationStatusResponse"
         "400":
           description: Validation error
           content:
@@ -286,6 +294,44 @@ paths:
                 $ref: "../schemas/common.yml#/components/schemas/Problem"
         "409":
           description: Tenant with this slug already exists
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "../schemas/common.yml#/components/schemas/Problem"
+
+  /v1/tenant/registration/{slug}:
+    get:
+      summary: Get tenant registration status
+      description: |
+        Returns the current status of a tenant registration process.
+        Use this to poll for completion after receiving a 202 from POST /v1/tenant/register.
+      operationId: getRegistrationStatus
+      tags:
+        - Tenants
+      security:
+        - BearerAuth: [tenants:read]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Tenant slug
+      responses:
+        "200":
+          description: Registration status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/tenant.yml#/components/schemas/RegistrationStatusResponse"
+        "404":
+          description: Registration not found
           content:
             application/problem+json:
               schema:

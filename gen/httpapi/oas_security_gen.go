@@ -44,6 +44,9 @@ var operationRolesBearerAuth = map[string][]string{
 	GetEnabledTenantSlugsOperation: []string{
 		"tenants:read",
 	},
+	GetRegistrationStatusOperation: []string{
+		"tenants:read",
+	},
 	GetTenantBySlugOperation: []string{
 		"tenants:read",
 	},

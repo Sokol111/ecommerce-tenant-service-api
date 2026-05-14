@@ -80,6 +80,72 @@ func decodeDeleteTenantParams(args [1]string, argsEscaped bool, r *http.Request)
 	return params, nil
 }
 
+// GetRegistrationStatusParams is parameters of getRegistrationStatus operation.
+type GetRegistrationStatusParams struct {
+	// Tenant slug.
+	Slug string
+}
+
+func unpackGetRegistrationStatusParams(packed middleware.Parameters) (params GetRegistrationStatusParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "slug",
+			In:   "path",
+		}
+		params.Slug = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetRegistrationStatusParams(args [1]string, argsEscaped bool, r *http.Request) (params GetRegistrationStatusParams, _ error) {
+	// Decode path: slug.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "slug",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.Slug = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "slug",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetTenantBySlugParams is parameters of getTenantBySlug operation.
 type GetTenantBySlugParams struct {
 	// Tenant slug.
