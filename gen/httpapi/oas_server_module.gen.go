@@ -5,6 +5,7 @@ package httpapi
 import (
 	"net/http"
 
+	"github.com/Sokol111/ecommerce-commons/pkg/swaggerui"
 	"go.uber.org/fx"
 )
 
@@ -14,9 +15,14 @@ func ServerModule() fx.Option {
 		fx.Provide(
 			ProvideServer,
 			NewSecurityHandlerAdapter,
+			provideSwaggerConfig,
 		),
 		fx.Invoke(registerOgenRoutes),
 	)
+}
+
+func provideSwaggerConfig() swaggerui.SwaggerConfig {
+	return swaggerui.SwaggerConfig{OpenAPIContent: OpenAPIDoc}
 }
 
 func registerOgenRoutes(mux *http.ServeMux, server *Server) {
