@@ -51,12 +51,13 @@ func (h *tenantEventHandler) handleTenantUpdated(ctx context.Context, evt *tenan
 	return nil
 }
 
+const tenantEventsConsumer = "tenant-events"
+
 // TenantEventsModule registers a Kafka consumer for tenant events that runs
 // database migrations when new tenants are created or existing ones are updated.
-// consumerName must match a consumer entry in the kafka config.
-func TenantEventsModule(consumerName string) fx.Option {
+func TenantEventsModule() fx.Option {
 	return fx.Options(
 		tenant_events.Module(),
-		consumer.RegisterHandlerAndConsumer(consumerName, newTenantEventHandler),
+		consumer.RegisterHandlerAndConsumer(tenantEventsConsumer, newTenantEventHandler),
 	)
 }

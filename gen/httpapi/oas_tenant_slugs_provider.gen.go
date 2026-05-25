@@ -47,10 +47,9 @@ func problemMessage(title string, detail OptString) string {
 }
 
 // NewTenantSlugsModule provides TenantSlugsProvider backed by the tenant-service API.
-// configPath is the koanf path to the client config (e.g. "clients.tenant-service").
-func NewTenantSlugsModule(configPath string) fx.Option {
+func NewTenantSlugsModule() fx.Option {
 	return fx.Module("tenant-slugs",
-		NewClientModule(configPath),
+		NewClientModule(),
 		fx.Provide(newTenantSlugsProvider),
 	)
 }
