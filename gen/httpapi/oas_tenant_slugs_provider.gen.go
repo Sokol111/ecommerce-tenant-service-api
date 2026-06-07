@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	commonsmongo "github.com/Sokol111/ecommerce-commons/pkg/persistence/mongo"
+	"github.com/Sokol111/ecommerce-commons/pkg/tenant"
 	"go.uber.org/fx"
 )
 
@@ -14,7 +14,7 @@ type tenantSlugsProvider struct {
 	invoker Invoker
 }
 
-func newTenantSlugsProvider(invoker Invoker) commonsmongo.TenantSlugsProvider {
+func newTenantSlugsProvider(invoker Invoker) tenant.SlugsProvider {
 	return &tenantSlugsProvider{invoker: invoker}
 }
 
