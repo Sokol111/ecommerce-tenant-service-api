@@ -5,6 +5,7 @@ package tenantevents
 import (
 	"github.com/Sokol111/ecommerce-commons/pkg/messaging/kafka/consumer"
 	tenant_events "github.com/Sokol111/ecommerce-tenant-service-api/gen/events"
+	"github.com/Sokol111/ecommerce-tenant-service-api/gen/httpapi"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -23,6 +24,7 @@ const tenantEventsConsumer = "tenant-events"
 //	))
 func Module() fx.Option {
 	return fx.Options(
+		httpapi.NewTenantSlugsModule(),
 		tenant_events.Module(),
 		fx.Provide(newTenantEventHandler),
 		consumer.RegisterHandlerAndConsumer(tenantEventsConsumer, newTenantRouter),
