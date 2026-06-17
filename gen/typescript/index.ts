@@ -1,2 +1,1 @@
-export * from './api.js';
-export * from './api.schemas.js';
+export * from './tenant/v1/tenant_pb.js';
