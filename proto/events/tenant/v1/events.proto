@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package tenant.v1;
+
+option go_package = "github.com/Sokol111/ecommerce-tenant-service-api/gen/events/tenant/v1;eventsv1";
+
+import "google/protobuf/timestamp.proto";
+
+// ==================== KAFKA EVENTS ====================
+
+// TenantUpdatedEvent is published on tenant create and update.
+// Query services should upsert their local tenant data.
+// Use version for conflict resolution when events arrive out of order.
+message TenantUpdatedEvent {
+  string id = 1;
+  string slug = 2;
+  string name = 3;
+  bool enabled = 4;
+  int32 version = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp modified_at = 7;
+}
+
+// TenantDeletedEvent is published when a tenant is permanently deleted.
+// Services should drop their tenant databases.
+message TenantDeletedEvent {
+  string slug = 1;
+}

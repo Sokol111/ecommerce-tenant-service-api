@@ -13,7 +13,7 @@ BUF ?= $(shell which buf 2>/dev/null || echo "$$(go env GOPATH)/bin/buf")
 .PHONY: connect-generate
 connect-generate: _connect-check-tools _connect-clean-dir ## Generate Go Connect code from proto using buf
 	@echo "$(COLOR_BLUE)→ Generating Connect code...$(COLOR_RESET)"
-	$(BUF) generate
+	$(BUF) generate proto/rpc
 	@echo "$(COLOR_GREEN)✓ Connect generation complete!$(COLOR_RESET)"
 	@echo "$(COLOR_BLUE)  Generated files in $(CONNECT_OUT)/:$(COLOR_RESET)"
 	@find $(CONNECT_OUT) -name '*.go' | head -20 | sed 's/^/    /'

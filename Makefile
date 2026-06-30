@@ -23,7 +23,7 @@ COLOR_RED := \033[31m
 
 # ---- Include makefiles ----
 -include $(MAKEFILES_DIR)/connect-ts.mk
--include $(MAKEFILES_DIR)/asyncapi-go.mk
+-include $(MAKEFILES_DIR)/events-go.mk
 -include $(MAKEFILES_DIR)/protobuf-connect.mk
 
 # =============================================================================
