@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file tenant/v1/events.proto.
  */
 export const file_tenant_v1_events: GenFile = /*@__PURE__*/
-  fileDesc("ChZ0ZW5hbnQvdjEvZXZlbnRzLnByb3RvEgl0ZW5hbnQudjEivwEKElRlbmFudFVwZGF0ZWRFdmVudBIKCgJpZBgBIAEoCRIMCgRzbHVnGAIgASgJEgwKBG5hbWUYAyABKAkSDwoHZW5hYmxlZBgEIAEoCBIPCgd2ZXJzaW9uGAUgASgFEi4KCmNyZWF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC21vZGlmaWVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIiChJUZW5hbnREZWxldGVkRXZlbnQSDAoEc2x1ZxgBIAEoCUJQWk5naXRodWIuY29tL1Nva29sMTExL2Vjb21tZXJjZS10ZW5hbnQtc2VydmljZS1hcGkvZ2VuL2V2ZW50cy90ZW5hbnQvdjE7ZXZlbnRzdjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChZ0ZW5hbnQvdjEvZXZlbnRzLnByb3RvEgl0ZW5hbnQudjEivwEKElRlbmFudFVwZGF0ZWRFdmVudBIKCgJpZBgBIAEoCRIMCgRzbHVnGAIgASgJEgwKBG5hbWUYAyABKAkSDwoHZW5hYmxlZBgEIAEoCBIPCgd2ZXJzaW9uGAUgASgDEi4KCmNyZWF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC21vZGlmaWVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIiChJUZW5hbnREZWxldGVkRXZlbnQSDAoEc2x1ZxgBIAEoCUJQWk5naXRodWIuY29tL1Nva29sMTExL2Vjb21tZXJjZS10ZW5hbnQtc2VydmljZS1hcGkvZ2VuL2V2ZW50cy90ZW5hbnQvdjE7ZXZlbnRzdjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * TenantUpdatedEvent is published on tenant create and update.
@@ -43,9 +43,9 @@ export type TenantUpdatedEvent = Message<"tenant.v1.TenantUpdatedEvent"> & {
   enabled: boolean;
 
   /**
-   * @generated from field: int32 version = 5;
+   * @generated from field: int64 version = 5;
    */
-  version: number;
+  version: bigint;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 6;
