@@ -6,11 +6,11 @@ modules:
   - path: proto/events
 
 deps:
-  - buf.build/googleapis/googleapis
+  - buf.build/bufbuild/protovalidate
 
 lint:
   use:
-    - DEFAULT
+    - STANDARD
 
 breaking:
   use:

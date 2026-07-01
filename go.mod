@@ -3,6 +3,7 @@ module github.com/Sokol111/ecommerce-tenant-service-api
 go 1.26.4
 
 require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260415201107-50325440f8f2.1
 	connectrpc.com/connect v1.20.0
 	github.com/Sokol111/ecommerce-commons v0.8.4
 	github.com/knadh/koanf/v2 v2.3.4

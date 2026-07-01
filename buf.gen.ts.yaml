@@ -5,3 +5,4 @@ plugins:
     out: gen/typescript
     opt:
       - target=ts
+    include_imports: true
