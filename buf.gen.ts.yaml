@@ -1,5 +1,8 @@
 version: v2
 
+inputs:
+  - directory: proto/rpc
+
 plugins:
   - remote: buf.build/bufbuild/es
     out: gen/typescript
