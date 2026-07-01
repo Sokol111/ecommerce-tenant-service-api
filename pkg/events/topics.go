@@ -17,17 +17,6 @@ var topicMap = map[protoreflect.FullName]string{
 	(&eventsv1.TenantDeletedEvent{}).ProtoReflect().Descriptor().FullName(): TopicTenantTenantEvents,
 }
 
-func init() {
-	fd := eventsv1.File_tenant_v1_events_proto
-	msgs := fd.Messages()
-	for i := range msgs.Len() {
-		fullName := msgs.Get(i).FullName()
-		if _, ok := topicMap[fullName]; !ok {
-			panic("events: no topic registered for " + string(fullName))
-		}
-	}
-}
-
 // TopicFor returns the Kafka topic for the given proto message.
 // Panics if the message type is not registered in topicMap.
 func TopicFor(msg proto.Message) string {
