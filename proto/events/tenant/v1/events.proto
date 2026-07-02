@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package tenant.v1;
+package tenant.events.v1;
 
 option go_package = "github.com/Sokol111/ecommerce-tenant-service-api/gen/events/tenant/v1;eventsv1";
 
