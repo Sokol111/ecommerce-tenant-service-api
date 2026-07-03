@@ -25,8 +25,6 @@ const (
 	TenantService_DeleteTenant_FullMethodName          = "/tenant.v1.TenantService/DeleteTenant"
 	TenantService_GetTenantList_FullMethodName         = "/tenant.v1.TenantService/GetTenantList"
 	TenantService_GetEnabledTenantSlugs_FullMethodName = "/tenant.v1.TenantService/GetEnabledTenantSlugs"
-	TenantService_RegisterTenant_FullMethodName        = "/tenant.v1.TenantService/RegisterTenant"
-	TenantService_GetRegistrationStatus_FullMethodName = "/tenant.v1.TenantService/GetRegistrationStatus"
 )
 
 // TenantServiceClient is the client API for TenantService service.
@@ -39,8 +37,6 @@ type TenantServiceClient interface {
 	DeleteTenant(ctx context.Context, in *DeleteTenantRequest, opts ...grpc.CallOption) (*DeleteTenantResponse, error)
 	GetTenantList(ctx context.Context, in *GetTenantListRequest, opts ...grpc.CallOption) (*GetTenantListResponse, error)
 	GetEnabledTenantSlugs(ctx context.Context, in *GetEnabledTenantSlugsRequest, opts ...grpc.CallOption) (*GetEnabledTenantSlugsResponse, error)
-	RegisterTenant(ctx context.Context, in *RegisterTenantRequest, opts ...grpc.CallOption) (*RegisterTenantResponse, error)
-	GetRegistrationStatus(ctx context.Context, in *GetRegistrationStatusRequest, opts ...grpc.CallOption) (*GetRegistrationStatusResponse, error)
 }
 
 type tenantServiceClient struct {
@@ -111,26 +107,6 @@ func (c *tenantServiceClient) GetEnabledTenantSlugs(ctx context.Context, in *Get
 	return out, nil
 }
 
-func (c *tenantServiceClient) RegisterTenant(ctx context.Context, in *RegisterTenantRequest, opts ...grpc.CallOption) (*RegisterTenantResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RegisterTenantResponse)
-	err := c.cc.Invoke(ctx, TenantService_RegisterTenant_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *tenantServiceClient) GetRegistrationStatus(ctx context.Context, in *GetRegistrationStatusRequest, opts ...grpc.CallOption) (*GetRegistrationStatusResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetRegistrationStatusResponse)
-	err := c.cc.Invoke(ctx, TenantService_GetRegistrationStatus_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // TenantServiceServer is the server API for TenantService service.
 // All implementations must embed UnimplementedTenantServiceServer
 // for forward compatibility.
@@ -141,8 +117,6 @@ type TenantServiceServer interface {
 	DeleteTenant(context.Context, *DeleteTenantRequest) (*DeleteTenantResponse, error)
 	GetTenantList(context.Context, *GetTenantListRequest) (*GetTenantListResponse, error)
 	GetEnabledTenantSlugs(context.Context, *GetEnabledTenantSlugsRequest) (*GetEnabledTenantSlugsResponse, error)
-	RegisterTenant(context.Context, *RegisterTenantRequest) (*RegisterTenantResponse, error)
-	GetRegistrationStatus(context.Context, *GetRegistrationStatusRequest) (*GetRegistrationStatusResponse, error)
 	mustEmbedUnimplementedTenantServiceServer()
 }
 
@@ -170,12 +144,6 @@ func (UnimplementedTenantServiceServer) GetTenantList(context.Context, *GetTenan
 }
 func (UnimplementedTenantServiceServer) GetEnabledTenantSlugs(context.Context, *GetEnabledTenantSlugsRequest) (*GetEnabledTenantSlugsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEnabledTenantSlugs not implemented")
-}
-func (UnimplementedTenantServiceServer) RegisterTenant(context.Context, *RegisterTenantRequest) (*RegisterTenantResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterTenant not implemented")
-}
-func (UnimplementedTenantServiceServer) GetRegistrationStatus(context.Context, *GetRegistrationStatusRequest) (*GetRegistrationStatusResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRegistrationStatus not implemented")
 }
 func (UnimplementedTenantServiceServer) mustEmbedUnimplementedTenantServiceServer() {}
 func (UnimplementedTenantServiceServer) testEmbeddedByValue()                       {}
@@ -306,42 +274,6 @@ func _TenantService_GetEnabledTenantSlugs_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TenantService_RegisterTenant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterTenantRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TenantServiceServer).RegisterTenant(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TenantService_RegisterTenant_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TenantServiceServer).RegisterTenant(ctx, req.(*RegisterTenantRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TenantService_GetRegistrationStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRegistrationStatusRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TenantServiceServer).GetRegistrationStatus(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TenantService_GetRegistrationStatus_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TenantServiceServer).GetRegistrationStatus(ctx, req.(*GetRegistrationStatusRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // TenantService_ServiceDesc is the grpc.ServiceDesc for TenantService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -372,14 +304,6 @@ var TenantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEnabledTenantSlugs",
 			Handler:    _TenantService_GetEnabledTenantSlugs_Handler,
-		},
-		{
-			MethodName: "RegisterTenant",
-			Handler:    _TenantService_RegisterTenant_Handler,
-		},
-		{
-			MethodName: "GetRegistrationStatus",
-			Handler:    _TenantService_GetRegistrationStatus_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

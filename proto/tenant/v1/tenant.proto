@@ -2,22 +2,10 @@ syntax = "proto3";
 
 package tenant.v1;
 
-option go_package = "github.com/Sokol111/ecommerce-tenant-service-api/gen/connect/tenant/v1;tenantv1";
+option go_package = "github.com/Sokol111/ecommerce-tenant-service-api/gen/go/tenant/v1;tenantv1";
 
-import "google/protobuf/timestamp.proto";
 import "buf/validate/validate.proto";
-
-// ==================== ENTITIES ====================
-
-message Tenant {
-  string id = 1;
-  string slug = 2;
-  string name = 3;
-  bool enabled = 4;
-  int64 version = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp modified_at = 7;
-}
+import "tenant/v1/types.proto";
 
 // ==================== REQUESTS ====================
 
@@ -41,12 +29,6 @@ message DeleteTenantRequest {
   string slug = 1 [(buf.validate.field).string.min_len = 1];
 }
 
-enum SortOrder {
-  SORT_ORDER_UNSPECIFIED = 0;
-  SORT_ORDER_ASC = 1;
-  SORT_ORDER_DESC = 2;
-}
-
 message GetTenantListRequest {
   int32 page = 1 [(buf.validate.field).int32.gte = 1];
   int32 size = 2 [(buf.validate.field).int32 = {gte: 1, lte: 100}];
@@ -56,19 +38,6 @@ message GetTenantListRequest {
 }
 
 message GetEnabledTenantSlugsRequest {}
-
-message RegisterTenantRequest {
-  string slug = 1 [(buf.validate.field).string = {min_len: 3, max_len: 16, pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"}];
-  string name = 2 [(buf.validate.field).string = {min_len: 1, max_len: 128}];
-  string email = 3 [(buf.validate.field).string.email = true];
-  string password = 4 [(buf.validate.field).string.min_len = 8];
-  string first_name = 5 [(buf.validate.field).string = {min_len: 1, max_len: 32}];
-  string last_name = 6 [(buf.validate.field).string = {min_len: 1, max_len: 32}];
-}
-
-message GetRegistrationStatusRequest {
-  string slug = 1 [(buf.validate.field).string.min_len = 1];
-}
 
 // ==================== RESPONSES ====================
 
@@ -97,26 +66,6 @@ message GetEnabledTenantSlugsResponse {
 
 message DeleteTenantResponse {}
 
-enum RegistrationStatus {
-  REGISTRATION_STATUS_UNSPECIFIED = 0;
-  REGISTRATION_STATUS_PROVISIONING = 1;
-  REGISTRATION_STATUS_COMPLETED = 2;
-  REGISTRATION_STATUS_COMPENSATING = 3;
-  REGISTRATION_STATUS_ROLLED_BACK = 4;
-}
-
-message RegisterTenantResponse {
-  string slug = 1;
-  RegistrationStatus status = 2;
-  optional string failure_reason = 3;
-}
-
-message GetRegistrationStatusResponse {
-  string slug = 1;
-  RegistrationStatus status = 2;
-  optional string failure_reason = 3;
-}
-
 // ==================== SERVICE ====================
 
 service TenantService {
@@ -126,6 +75,4 @@ service TenantService {
   rpc DeleteTenant(DeleteTenantRequest) returns (DeleteTenantResponse);
   rpc GetTenantList(GetTenantListRequest) returns (GetTenantListResponse);
   rpc GetEnabledTenantSlugs(GetEnabledTenantSlugsRequest) returns (GetEnabledTenantSlugsResponse);
-  rpc RegisterTenant(RegisterTenantRequest) returns (RegisterTenantResponse);
-  rpc GetRegistrationStatus(GetRegistrationStatusRequest) returns (GetRegistrationStatusResponse);
 }

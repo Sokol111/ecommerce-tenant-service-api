@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Sokol111/ecommerce-commons/pkg/tenant"
-	tenantv1 "github.com/Sokol111/ecommerce-tenant-service-api/gen/connect/tenant/v1"
+	tenantv1 "github.com/Sokol111/ecommerce-tenant-service-api/gen/go/tenant/v1"
 	"go.uber.org/fx"
 )
 

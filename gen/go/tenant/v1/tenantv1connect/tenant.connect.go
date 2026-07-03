@@ -8,7 +8,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	v1 "github.com/Sokol111/ecommerce-tenant-service-api/gen/connect/tenant/v1"
+	v1 "github.com/Sokol111/ecommerce-tenant-service-api/gen/go/tenant/v1"
 	http "net/http"
 	strings "strings"
 )
@@ -51,12 +51,6 @@ const (
 	// TenantServiceGetEnabledTenantSlugsProcedure is the fully-qualified name of the TenantService's
 	// GetEnabledTenantSlugs RPC.
 	TenantServiceGetEnabledTenantSlugsProcedure = "/tenant.v1.TenantService/GetEnabledTenantSlugs"
-	// TenantServiceRegisterTenantProcedure is the fully-qualified name of the TenantService's
-	// RegisterTenant RPC.
-	TenantServiceRegisterTenantProcedure = "/tenant.v1.TenantService/RegisterTenant"
-	// TenantServiceGetRegistrationStatusProcedure is the fully-qualified name of the TenantService's
-	// GetRegistrationStatus RPC.
-	TenantServiceGetRegistrationStatusProcedure = "/tenant.v1.TenantService/GetRegistrationStatus"
 )
 
 // TenantServiceClient is a client for the tenant.v1.TenantService service.
@@ -67,8 +61,6 @@ type TenantServiceClient interface {
 	DeleteTenant(context.Context, *connect.Request[v1.DeleteTenantRequest]) (*connect.Response[v1.DeleteTenantResponse], error)
 	GetTenantList(context.Context, *connect.Request[v1.GetTenantListRequest]) (*connect.Response[v1.GetTenantListResponse], error)
 	GetEnabledTenantSlugs(context.Context, *connect.Request[v1.GetEnabledTenantSlugsRequest]) (*connect.Response[v1.GetEnabledTenantSlugsResponse], error)
-	RegisterTenant(context.Context, *connect.Request[v1.RegisterTenantRequest]) (*connect.Response[v1.RegisterTenantResponse], error)
-	GetRegistrationStatus(context.Context, *connect.Request[v1.GetRegistrationStatusRequest]) (*connect.Response[v1.GetRegistrationStatusResponse], error)
 }
 
 // NewTenantServiceClient constructs a client for the tenant.v1.TenantService service. By default,
@@ -118,18 +110,6 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(tenantServiceMethods.ByName("GetEnabledTenantSlugs")),
 			connect.WithClientOptions(opts...),
 		),
-		registerTenant: connect.NewClient[v1.RegisterTenantRequest, v1.RegisterTenantResponse](
-			httpClient,
-			baseURL+TenantServiceRegisterTenantProcedure,
-			connect.WithSchema(tenantServiceMethods.ByName("RegisterTenant")),
-			connect.WithClientOptions(opts...),
-		),
-		getRegistrationStatus: connect.NewClient[v1.GetRegistrationStatusRequest, v1.GetRegistrationStatusResponse](
-			httpClient,
-			baseURL+TenantServiceGetRegistrationStatusProcedure,
-			connect.WithSchema(tenantServiceMethods.ByName("GetRegistrationStatus")),
-			connect.WithClientOptions(opts...),
-		),
 	}
 }
 
@@ -141,8 +121,6 @@ type tenantServiceClient struct {
 	deleteTenant          *connect.Client[v1.DeleteTenantRequest, v1.DeleteTenantResponse]
 	getTenantList         *connect.Client[v1.GetTenantListRequest, v1.GetTenantListResponse]
 	getEnabledTenantSlugs *connect.Client[v1.GetEnabledTenantSlugsRequest, v1.GetEnabledTenantSlugsResponse]
-	registerTenant        *connect.Client[v1.RegisterTenantRequest, v1.RegisterTenantResponse]
-	getRegistrationStatus *connect.Client[v1.GetRegistrationStatusRequest, v1.GetRegistrationStatusResponse]
 }
 
 // CreateTenant calls tenant.v1.TenantService.CreateTenant.
@@ -175,16 +153,6 @@ func (c *tenantServiceClient) GetEnabledTenantSlugs(ctx context.Context, req *co
 	return c.getEnabledTenantSlugs.CallUnary(ctx, req)
 }
 
-// RegisterTenant calls tenant.v1.TenantService.RegisterTenant.
-func (c *tenantServiceClient) RegisterTenant(ctx context.Context, req *connect.Request[v1.RegisterTenantRequest]) (*connect.Response[v1.RegisterTenantResponse], error) {
-	return c.registerTenant.CallUnary(ctx, req)
-}
-
-// GetRegistrationStatus calls tenant.v1.TenantService.GetRegistrationStatus.
-func (c *tenantServiceClient) GetRegistrationStatus(ctx context.Context, req *connect.Request[v1.GetRegistrationStatusRequest]) (*connect.Response[v1.GetRegistrationStatusResponse], error) {
-	return c.getRegistrationStatus.CallUnary(ctx, req)
-}
-
 // TenantServiceHandler is an implementation of the tenant.v1.TenantService service.
 type TenantServiceHandler interface {
 	CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error)
@@ -193,8 +161,6 @@ type TenantServiceHandler interface {
 	DeleteTenant(context.Context, *connect.Request[v1.DeleteTenantRequest]) (*connect.Response[v1.DeleteTenantResponse], error)
 	GetTenantList(context.Context, *connect.Request[v1.GetTenantListRequest]) (*connect.Response[v1.GetTenantListResponse], error)
 	GetEnabledTenantSlugs(context.Context, *connect.Request[v1.GetEnabledTenantSlugsRequest]) (*connect.Response[v1.GetEnabledTenantSlugsResponse], error)
-	RegisterTenant(context.Context, *connect.Request[v1.RegisterTenantRequest]) (*connect.Response[v1.RegisterTenantResponse], error)
-	GetRegistrationStatus(context.Context, *connect.Request[v1.GetRegistrationStatusRequest]) (*connect.Response[v1.GetRegistrationStatusResponse], error)
 }
 
 // NewTenantServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -240,18 +206,6 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(tenantServiceMethods.ByName("GetEnabledTenantSlugs")),
 		connect.WithHandlerOptions(opts...),
 	)
-	tenantServiceRegisterTenantHandler := connect.NewUnaryHandler(
-		TenantServiceRegisterTenantProcedure,
-		svc.RegisterTenant,
-		connect.WithSchema(tenantServiceMethods.ByName("RegisterTenant")),
-		connect.WithHandlerOptions(opts...),
-	)
-	tenantServiceGetRegistrationStatusHandler := connect.NewUnaryHandler(
-		TenantServiceGetRegistrationStatusProcedure,
-		svc.GetRegistrationStatus,
-		connect.WithSchema(tenantServiceMethods.ByName("GetRegistrationStatus")),
-		connect.WithHandlerOptions(opts...),
-	)
 	return "/tenant.v1.TenantService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case TenantServiceCreateTenantProcedure:
@@ -266,10 +220,6 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 			tenantServiceGetTenantListHandler.ServeHTTP(w, r)
 		case TenantServiceGetEnabledTenantSlugsProcedure:
 			tenantServiceGetEnabledTenantSlugsHandler.ServeHTTP(w, r)
-		case TenantServiceRegisterTenantProcedure:
-			tenantServiceRegisterTenantHandler.ServeHTTP(w, r)
-		case TenantServiceGetRegistrationStatusProcedure:
-			tenantServiceGetRegistrationStatusHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -301,12 +251,4 @@ func (UnimplementedTenantServiceHandler) GetTenantList(context.Context, *connect
 
 func (UnimplementedTenantServiceHandler) GetEnabledTenantSlugs(context.Context, *connect.Request[v1.GetEnabledTenantSlugsRequest]) (*connect.Response[v1.GetEnabledTenantSlugsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("tenant.v1.TenantService.GetEnabledTenantSlugs is not implemented"))
-}
-
-func (UnimplementedTenantServiceHandler) RegisterTenant(context.Context, *connect.Request[v1.RegisterTenantRequest]) (*connect.Response[v1.RegisterTenantResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("tenant.v1.TenantService.RegisterTenant is not implemented"))
-}
-
-func (UnimplementedTenantServiceHandler) GetRegistrationStatus(context.Context, *connect.Request[v1.GetRegistrationStatusRequest]) (*connect.Response[v1.GetRegistrationStatusResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("tenant.v1.TenantService.GetRegistrationStatus is not implemented"))
 }

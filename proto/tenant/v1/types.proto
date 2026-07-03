@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package tenant.v1;
+
+option go_package = "github.com/Sokol111/ecommerce-tenant-service-api/gen/go/tenant/v1;tenantv1";
+
+import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
+
+// Tenant represents a multi-tenant workspace in the platform.
+message Tenant {
+  string id = 1;
+  string slug = 2 [(buf.validate.field).string = {min_len: 3, max_len: 63, pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"}];
+  string name = 3 [(buf.validate.field).string = {min_len: 1, max_len: 255}];
+  bool enabled = 4;
+  int64 version = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp modified_at = 7;
+}
+
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}

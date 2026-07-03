@@ -5,7 +5,7 @@ import (
 	"go.uber.org/fx"
 
 	grpcclient "github.com/Sokol111/ecommerce-commons/pkg/grpc/client"
-	tenantv1 "github.com/Sokol111/ecommerce-tenant-service-api/gen/connect/tenant/v1"
+	tenantv1 "github.com/Sokol111/ecommerce-tenant-service-api/gen/go/tenant/v1"
 )
 
 // Module wires a native gRPC client for TenantService.

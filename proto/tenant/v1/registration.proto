@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package tenant.v1;
+
+option go_package = "github.com/Sokol111/ecommerce-tenant-service-api/gen/go/tenant/v1;tenantv1";
+
+import "buf/validate/validate.proto";
+
+// ==================== REQUESTS ====================
+
+message RegisterTenantRequest {
+  string slug = 1 [(buf.validate.field).string = {min_len: 3, max_len: 16, pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"}];
+  string name = 2 [(buf.validate.field).string = {min_len: 1, max_len: 128}];
+  string email = 3 [(buf.validate.field).string.email = true];
+  string password = 4 [(buf.validate.field).string.min_len = 8];
+  string first_name = 5 [(buf.validate.field).string = {min_len: 1, max_len: 32}];
+  string last_name = 6 [(buf.validate.field).string = {min_len: 1, max_len: 32}];
+}
+
+message GetRegistrationStatusRequest {
+  string slug = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+// ==================== RESPONSES ====================
+
+enum RegistrationStatus {
+  REGISTRATION_STATUS_UNSPECIFIED = 0;
+  REGISTRATION_STATUS_PROVISIONING = 1;
+  REGISTRATION_STATUS_COMPLETED = 2;
+  REGISTRATION_STATUS_COMPENSATING = 3;
+  REGISTRATION_STATUS_ROLLED_BACK = 4;
+}
+
+message RegisterTenantResponse {
+  string slug = 1;
+  RegistrationStatus status = 2;
+  optional string failure_reason = 3;
+}
+
+message GetRegistrationStatusResponse {
+  string slug = 1;
+  RegistrationStatus status = 2;
+  optional string failure_reason = 3;
+}
+
+// ==================== SERVICE ====================
+
+service TenantRegistrationService {
+  rpc RegisterTenant(RegisterTenantRequest) returns (RegisterTenantResponse);
+  rpc GetRegistrationStatus(GetRegistrationStatusRequest) returns (GetRegistrationStatusResponse);
+}
