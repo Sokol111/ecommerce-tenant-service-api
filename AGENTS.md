@@ -1,6 +1,4 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# AGENTS.md
 
 > This repo is one member of the `ecommerce-*` multi-repo workspace. See the workspace-root
 > `CLAUDE.md` for the release-then-bump rule, `go.work` resolution, and dev-container notes.
